@@ -3,27 +3,26 @@ import bcrypt from "bcrypt";
 import { User, RefreshToken, sequelize } from "../../../db/sequelize.js";
 import { tokensFromUser, hashToken, setAuthCookies } from "../../lib/jwt.js";
 
-export default async function register(req, res) {
+export default async function login(req, res) {
   const t = await sequelize.transaction();
   try {
     const schema = z.object({
-      name: z.string().min(2).max(100),
       email: z.string().email().transform((s) => s.toLowerCase()),
-      password: z.string().min(6).max(100),
-      role: z.enum(["candidate", "employer", "admin"]).optional(),
+      password: z.string().min(1),
     });
+    const { email, password } = schema.parse(req.body);
 
-    const { name, email, password, role } = schema.parse(req.body);
-
-    const existing = await User.findOne({ where: { email }, transaction: t, lock: t.LOCK.UPDATE });
-    if (existing) {
+    const user = await User.findOne({ where: { email }, transaction: t, lock: t.LOCK.UPDATE });
+    if (!user) {
       await t.rollback();
-      return res.status(400).json({ error: { code: "EMAIL_TAKEN", message: "Email already in use" } });
+      return res.status(401).json({ error: { code: "INVALID_CREDENTIALS", message: "E-mail ou senha inválidos." } });
     }
 
-    const password_hash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, password_hash, role: role || "candidate" }, { transaction: t });
-    await user.reload({ transaction: t });
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) {
+      await t.rollback();
+      return res.status(401).json({ error: { code: "INVALID_CREDENTIALS", message: "E-mail ou senha inválidos." } });
+    }
 
     const { access, refresh, jti } = tokensFromUser(user);
     const token_hash = await hashToken(refresh);
@@ -45,10 +44,10 @@ export default async function register(req, res) {
       id: user.id, name: user.name, email: user.email, role: user.role,
       avatarUrl: user.avatar_url ?? null, headline: user.headline ?? null, location: user.location ?? null,
     };
-    return res.status(201).json({ user: pub });
+    return res.status(200).json({ user: pub });
   } catch (e) {
     await t.rollback();
-    console.error("[register]", e);
+    console.error("[login]", e);
     return res.status(500).json({ error: { code: "INTERNAL", message: "Internal server error" } });
   }
 }

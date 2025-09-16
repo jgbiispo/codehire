@@ -1,18 +1,23 @@
 import express from "express";
-import Register from "./controllers/auth_controller/register.controller.js";
+import register from "./controllers/auth_controller/register.controller.js";
+import login from "./controllers/auth_controller/login.controller.js";
+import refresh from "./controllers/auth_controller/refresh.controller.js";
+import logout from "./controllers/auth_controller/logout.controller.js";
+import { requireAuth } from "./middlewares/auth.js";
+
 const router = express.Router();
 
 // Auth routes
-router.post("/register", Register);
-router.post("/login", (req, res) => { });
-router.post("/logout", (req, res) => { });
-router.post("/refresh", (req, res) => { });
+router.post("/register", register);
+router.post("/login", login);
+router.post("/refresh", refresh);
+router.post("/logout", logout);
 
 // User routes
-router.get("/me", (req, res) => { });
-router.patch("/me", (req, res) => { });
-router.get("/me/bookmarks", (req, res) => { });
-router.post("/me/applications", (req, res) => { });
+router.get("/me", requireAuth, (req, res) => { });
+router.patch("/me", requireAuth, (req, res) => { });
+router.get("/me/bookmarks", requireAuth, (req, res) => { });
+router.post("/me/applications", requireAuth, (req, res) => { });
 
 // Enterprise routes
 router.get("/companies", (req, res) => { });

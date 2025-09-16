@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import cookieParser from "cookie-parser";
 import cors from 'cors';
 import routes from './routes.js';
 import { sequelize } from "../db/sequelize.js";
@@ -10,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use('/', routes);
 
 // Test DB connection
