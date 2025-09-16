@@ -8,7 +8,7 @@ export default async function register(req, res) {
   try {
     const schema = z.object({
       name: z.string().min(2).max(100),
-      email: z.string().email().transform((s) => s.toLowerCase()),
+      email: z.email().transform((s) => s.toLowerCase()),
       password: z.string().min(6).max(100),
       role: z.enum(["candidate", "employer", "admin"]).optional(),
     });

@@ -40,6 +40,8 @@ export const Company = sequelize.define("Company", {
   verified: { type: DataTypes.BOOLEAN, defaultValue: false },
   socials: DataTypes.JSONB,
   owner_id: DataTypes.UUID,
+  verified_at: DataTypes.DATE,
+  verified_by: DataTypes.UUID,
 }, { tableName: "companies", underscored: true, timestamps: false });
 
 export const Job = sequelize.define("Job", {

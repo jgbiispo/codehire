@@ -19,9 +19,8 @@ export default async function createCompany(req, res) {
 
     const data = bodySchema.parse(req.body);
 
-    const isAdmin = role === "admin";
     const isEmployer = role === "employer";
-    if (!isAdmin && !isEmployer) {
+    if (!isEmployer) {
       return res.status(403).json({ error: { code: "FORBIDDEN", message: "Sem permissão para criar empresas." } });
     }
 

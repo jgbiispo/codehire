@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Op, Sequelize } from "sequelize";
-import { Company, Job } from "../../../db/sequelize.js";
+import { Company, Job, User } from "../../../db/sequelize.js";
 
 const qSchema = z.object({
   q: z.string().trim().min(1).max(100).optional(),
@@ -65,6 +65,7 @@ export default async function listCompanies(req, res) {
         description: data.description_md,
         location: data.location,
         verified: data.verified,
+        verifiedAt: data.verified_at ?? null,
         jobCount: Number(data.jobCount || 0),
         createdAt: data.created_at,
         updatedAt: data.updated_at,
