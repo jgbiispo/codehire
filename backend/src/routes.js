@@ -1,7 +1,8 @@
 import express from "express";
 import {
   authControllers,
-  userControllers
+  userControllers,
+  companyControllers,
 } from "./controllers/index.js";
 import { dbHealth, initAssociations } from "../db/sequelize.js";
 import { requireAuth } from "./middlewares/auth.js";
@@ -32,10 +33,11 @@ router.get("/me/bookmarks", requireAuth, userControllers().list_bookmarks);
 router.get("/me/applications", requireAuth, userControllers().list_my_applications);
 
 // Enterprise routes
-router.get("/companies", (req, res) => { });
-router.get("/companies/:slug", (req, res) => { });
-router.patch("/companies/:id", (req, res) => { });
-router.post("/companies/:id/verify", (req, res) => { });
+router.get("/companies", companyControllers().listCompanies);
+router.get("/companies/:slug", companyControllers().getCompanyBySlug);
+router.post("/companies", requireAuth, companyControllers().createCompany);
+router.patch("/companies/:id", requireAuth, companyControllers().updateCompany);
+router.post("/companies/:id/verify", requireAuth, companyControllers().verifyCompany);
 
 // Uploads routes
 router.post("/uploads/presign", (req, res) => { });
