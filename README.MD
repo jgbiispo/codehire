@@ -15,7 +15,7 @@ Inclui autenticação (cookies HttpOnly), CRUD de empresas e vagas, candidaturas
 - [Scripts](#scripts)
 - [Banco de dados](#banco-de-dados)
 - [Executando](#executando)
-- [Estrutura de pastas](#estrutura-de-pastas)
+- [Estrutura de pastas](#estrutura-de-pastas-backend)
 - [Rotas principais](./backend/DOCS.MD/#rotas-principais)
 - [Exemplos de requisição](./backend/DOCS.MD/#exemplos-de-requisição)
 - [Licença](#licença)
@@ -45,7 +45,7 @@ Inclui autenticação (cookies HttpOnly), CRUD de empresas e vagas, candidaturas
 
 Crie um arquivo `.env` na raiz:
 
-```json
+```txt
 DATABASE_URL=postgres://usuario:senha@localhost:5432/portal_empregos
 PGSSL=false
 NODE_ENV=development
