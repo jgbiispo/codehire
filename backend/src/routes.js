@@ -1,23 +1,35 @@
 import express from "express";
-import register from "./controllers/auth_controller/register.controller.js";
-import login from "./controllers/auth_controller/login.controller.js";
-import refresh from "./controllers/auth_controller/refresh.controller.js";
-import logout from "./controllers/auth_controller/logout.controller.js";
+import {
+  authControllers,
+  userControllers
+} from "./controllers/index.js";
+import { dbHealth, initAssociations } from "../db/sequelize.js";
 import { requireAuth } from "./middlewares/auth.js";
 
 const router = express.Router();
+initAssociations();
+
+// Health check
+router.get("/health", async (req, res) => {
+  try {
+    await dbHealth();
+    res.status(200).json({ status: "ok" });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e.message });
+  }
+});
 
 // Auth routes
-router.post("/register", register);
-router.post("/login", login);
-router.post("/refresh", refresh);
-router.post("/logout", logout);
+router.post("/register", authControllers().register);
+router.post("/login", authControllers().login);
+router.post("/refresh", authControllers().refresh);
+router.post("/logout", authControllers().logout);
 
 // User routes
-router.get("/me", requireAuth, (req, res) => { });
-router.patch("/me", requireAuth, (req, res) => { });
-router.get("/me/bookmarks", requireAuth, (req, res) => { });
-router.post("/me/applications", requireAuth, (req, res) => { });
+router.get("/me", requireAuth, userControllers().getMe);
+router.patch("/me", requireAuth, userControllers().patchMe);
+router.get("/me/bookmarks", requireAuth, userControllers().list_bookmarks);
+router.get("/me/applications", requireAuth, userControllers().list_my_applications);
 
 // Enterprise routes
 router.get("/companies", (req, res) => { });

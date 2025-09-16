@@ -1,4 +1,3 @@
-// src/db/sequelize.js (ESM)
 import { Sequelize, DataTypes } from "sequelize";
 import "dotenv/config";
 
@@ -77,33 +76,49 @@ export const Application = sequelize.define("Application", {
   cover_letter_md: DataTypes.TEXT,
   answers: DataTypes.JSONB,
   status: { type: DataTypes.ENUM("submitted", "in_review", "shortlisted", "rejected", "hired"), defaultValue: "submitted" },
+  created_at: { type: DataTypes.DATE, defaultValue: Sequelize.fn("NOW") },
 }, { tableName: "applications", underscored: true, timestamps: false });
 
 export const Bookmark = sequelize.define("Bookmark", {
+  user_id: { type: DataTypes.UUID, primaryKey: true },
+  job_id: { type: DataTypes.UUID, primaryKey: true },
   created_at: { type: DataTypes.DATE, defaultValue: Sequelize.fn("NOW") },
 }, { tableName: "bookmarks", underscored: true, timestamps: false });
 
-// ===== Associations =====
-User.hasMany(Company, { foreignKey: "owner_id" });
-Company.belongsTo(User, { as: "owner", foreignKey: "owner_id" });
-
-Company.hasMany(Job, { foreignKey: "company_id" });
-Job.belongsTo(Company, { foreignKey: "company_id" });
-
-User.hasMany(Application, { foreignKey: "user_id" });
-Application.belongsTo(User, { foreignKey: "user_id" });
-Job.hasMany(Application, { foreignKey: "job_id" });
-Application.belongsTo(Job, { foreignKey: "job_id" });
-
-User.belongsToMany(Job, { through: Bookmark, foreignKey: "user_id", otherKey: "job_id", as: "bookmarkedJobs" });
-Job.belongsToMany(User, { through: Bookmark, foreignKey: "job_id", otherKey: "user_id", as: "bookmarkers" });
-
-User.hasMany(RefreshToken, { foreignKey: "user_id" });
-RefreshToken.belongsTo(User, { foreignKey: "user_id" });
-
 export const JobTag = sequelize.define("JobTag", {}, { tableName: "job_tags", underscored: true, timestamps: false });
-Job.belongsToMany(Tag, { through: JobTag, foreignKey: "job_id", otherKey: "tag_id" });
-Tag.belongsToMany(Job, { through: JobTag, foreignKey: "tag_id", otherKey: "job_id" });
+
+// ================== Associations ==================
+let associationsInitialized = false;
+export function initAssociations() {
+  if (associationsInitialized) return;
+  associationsInitialized = true;
+
+  // Companies
+  User.hasMany(Company, { foreignKey: "owner_id", as: "companies" });
+  Company.belongsTo(User, { foreignKey: "owner_id", as: "owner" });
+
+  // Jobs
+  Company.hasMany(Job, { foreignKey: "company_id", as: "jobs" });
+  Job.belongsTo(Company, { foreignKey: "company_id", as: "company" });
+
+  // Applications
+  User.hasMany(Application, { foreignKey: "user_id", as: "applications" });
+  Application.belongsTo(User, { foreignKey: "user_id", as: "candidate" });
+  Job.hasMany(Application, { foreignKey: "job_id", as: "applications" });
+  Application.belongsTo(Job, { foreignKey: "job_id", as: "job" });
+
+  // Tags
+  Job.belongsToMany(Tag, { through: JobTag, foreignKey: "job_id", otherKey: "tag_id", as: "tags" });
+  Tag.belongsToMany(Job, { through: JobTag, foreignKey: "tag_id", otherKey: "job_id", as: "jobs" });
+
+  // Bookmarks 
+  User.belongsToMany(Job, { through: Bookmark, foreignKey: "user_id", otherKey: "job_id", as: "bookmarkedJobs" });
+  Job.belongsToMany(User, { through: Bookmark, foreignKey: "job_id", otherKey: "user_id", as: "bookmarkers" });
+
+  // Acessos diretos a partir do Bookmark
+  Bookmark.belongsTo(User, { foreignKey: "user_id", as: "user" });
+  Bookmark.belongsTo(Job, { foreignKey: "job_id", as: "job" });
+}
 
 // health helper
 export async function dbHealth() {

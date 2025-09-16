@@ -12,7 +12,6 @@ export function requireAuth(req, res, next) {
   }
 }
 
-// opcional: permite seguir sem 401 (apenas anexa req.user se válido)
 export function optionalAuth(req, _res, next) {
   const token = getAccessTokenFromReq(req);
   if (!token) return next();
