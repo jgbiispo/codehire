@@ -10,6 +10,12 @@ import patchMe from "./user_controller/patch_me.controller.js";
 import list_bookmarks from "./user_controller/list_bookmarks.controller.js";
 import list_my_applications from "./user_controller/list_my_applications.controller.js";
 
+// Company controllers
+import listCompanies from "./company_controller/list_companies.controller.js";
+import getCompanyBySlug from "./company_controller/get_company_by_slug.controller.js";
+import updateCompany from "./company_controller/update_company.controller.js";
+import verifyCompany from "./company_controller/verify_company.controller.js";
+import createCompany from "./company_controller/create_company.controller.js";
 
 export function authControllers() {
   return {
@@ -26,5 +32,15 @@ export function userControllers() {
     patchMe,
     list_bookmarks,
     list_my_applications,
+  };
+}
+
+export function companyControllers() {
+  return {
+    listCompanies,
+    createCompany,
+    getCompanyBySlug,
+    updateCompany,
+    verifyCompany,
   };
 }
