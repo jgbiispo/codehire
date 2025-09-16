@@ -62,7 +62,7 @@ export const Job = sequelize.define("Job", {
   featured_until: DataTypes.DATE,
   requirements: DataTypes.ARRAY(DataTypes.TEXT),
   benefits: DataTypes.ARRAY(DataTypes.TEXT),
-  posted_at: DataTypes.DATE,
+  posted_at: { type: DataTypes.DATE, defaultValue: Sequelize.fn("NOW") },
   expires_at: DataTypes.DATE,
 }, { tableName: "jobs", underscored: true, timestamps: false });
 

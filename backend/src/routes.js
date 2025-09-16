@@ -3,6 +3,8 @@ import {
   authControllers,
   userControllers,
   companyControllers,
+  applicationControllers,
+  jobControllers,
 } from "./controllers/index.js";
 import { dbHealth, initAssociations } from "../db/sequelize.js";
 import { requireAuth } from "./middlewares/auth.js";
@@ -43,7 +45,7 @@ router.post("/companies/:id/verify", requireAuth, companyControllers().verifyCom
 router.post("/uploads/presign", (req, res) => { });
 
 // Jobs routes
-router.post("/jobs", (req, res) => { });
+router.post("/jobs", requireAuth, jobControllers().createJob);
 router.get("/jobs", (req, res) => { });
 router.get("/jobs/:slug", (req, res) => { });
 router.patch("/jobs/:id", (req, res) => { });
@@ -53,9 +55,11 @@ router.post("/jobs/:id/bookmark", (req, res) => { });
 router.delete("/jobs/:id/bookmark", (req, res) => { });
 
 // Applications routes
-router.post("/jobs/:id/apply", (req, res) => { });
-router.get("/employer/applications", (req, res) => { });
-router.patch("/applications/:id", (req, res) => { });
+router.post("/jobs/:id/apply", requireAuth, applicationControllers().applyToJob);
+router.get("/employer/applications", requireAuth, applicationControllers().listEmployerApplications);
+router.get("/applications/:id", requireAuth, applicationControllers().getApplicationById);
+router.patch("/applications/:id", requireAuth, applicationControllers().updateApplicationStatus);
+router.delete("/applications/:id", requireAuth, applicationControllers().deleteApplication);
 
 // Tags routes
 router.get("/tags", (req, res) => { });

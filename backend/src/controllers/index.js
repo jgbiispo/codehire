@@ -17,6 +17,16 @@ import updateCompany from "./company_controller/update_company.controller.js";
 import verifyCompany from "./company_controller/verify_company.controller.js";
 import createCompany from "./company_controller/create_company.controller.js";
 
+// Application controllers
+import applyToJob from "./application_controller/apply_to_job.controller.js";
+import listEmployerApplications from "./application_controller/list_employer_applications.controller.js";
+import getApplicationById from "./application_controller/get_application_by_id.controller.js";
+import updateApplicationStatus from "./application_controller/update_application_status.controller.js";
+import deleteApplication from "./application_controller/delete_application.controller.js";
+
+// Job controllers
+import createJob from "./job_controller/create_job.controller.js";
+
 export function authControllers() {
   return {
     register,
@@ -42,5 +52,21 @@ export function companyControllers() {
     getCompanyBySlug,
     updateCompany,
     verifyCompany,
+  };
+}
+
+export function applicationControllers() {
+  return {
+    applyToJob,
+    listEmployerApplications,
+    getApplicationById,
+    updateApplicationStatus,
+    deleteApplication,
+  };
+}
+
+export function jobControllers() {
+  return {
+    createJob,
   };
 }
