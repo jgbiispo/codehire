@@ -39,14 +39,12 @@ const bodySchema = z.object({
   timezone: z.string().max(120).optional(),
   visaSponsorship: z.coerce.boolean().optional(),
   location: z.string().max(160).optional(),
-  // status e featuredUntil só admin pode setar
   status: z.enum(["draft", "pending", "approved", "rejected", "expired"]).optional(),
   featuredUntil: z.coerce.date().optional(),
   postedAt: z.coerce.date().optional(),
   expiresAt: z.coerce.date().optional(),
   requirements: z.array(z.string().min(1)).max(100).optional(),
   benefits: z.array(z.string().min(1)).max(100).optional(),
-  // tags: nomes ou slugs
   tags: z.array(z.union([z.string(), z.object({ name: z.string(), slug: z.string().optional(), type: z.enum(["tech", "role", "seniority", "other"]).optional() })])).optional()
 }).refine(
   d => (d.salaryMin == null && d.salaryMax == null) || (d.salaryMin != null && d.salaryMax != null && d.salaryMin <= d.salaryMax),
