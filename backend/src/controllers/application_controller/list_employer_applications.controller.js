@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Op, Sequelize } from "sequelize";
-import { sequelize, Application, Job, Company, User, Tag } from "../../../db/sequelize.js";
+import { Application, Job, Company, User, Tag } from "../../../db/sequelize.js";
 
 const qSchema = z.object({
   jobId: z.uuid().optional(),
