@@ -27,7 +27,7 @@ async function uniqueJobSlug(base, t) {
 }
 
 const bodySchema = z.object({
-  companyId: z.string().uuid(),
+  companyId: z.uuid(),
   title: z.string().min(3).max(140),
   descriptionMd: z.string().min(1).max(20000),
   employmentType: z.enum(["full_time", "part_time", "contract", "internship", "temporary"]),
