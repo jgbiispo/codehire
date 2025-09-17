@@ -9,7 +9,6 @@ export default async function getJobBySlug(req, res) {
     const { slug } = paramsSchema.parse(req.params);
     const uid = req.user?.id || null;
 
-    // Apenas vaga pública e vigente (approved + não expirada)
     const job = await Job.findOne({
       where: {
         slug,
@@ -26,7 +25,6 @@ export default async function getJobBySlug(req, res) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Vaga não encontrada." } });
     }
 
-    // Flag de bookmark (se autenticado)
     let bookmarked = false;
     if (uid) {
       const bm = await Bookmark.findOne({ where: { user_id: uid, job_id: job.id }, attributes: ["created_at"] });

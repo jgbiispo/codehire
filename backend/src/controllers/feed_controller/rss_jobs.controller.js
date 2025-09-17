@@ -1,9 +1,7 @@
-// src/controllers/feed_controller/rss_jobs.controller.js
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import { Job, Company, Tag, sequelize } from "../../../db/sequelize.js";
 
-/* Helpers */
 const qSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
@@ -18,17 +16,15 @@ const XML = {
       .replace(/'/g, "&apos;");
   },
   cdata(s = "") {
-    // protege ]]>
     return `<![CDATA[${String(s).replace(/]]>/g, "]]]]><![CDATA[>")}]]>`;
   },
 };
 
 function rfc1123(date = new Date()) {
-  return new Date(date).toUTCString(); // RSS pubDate
+  return new Date(date).toUTCString(); x
 }
 
 function stripMd(md = "") {
-  // simplão: tira cabeçalhos, links, imagens, codefences e markdown básico
   return String(md)
     .replace(/```[\s\S]*?```/g, "")
     .replace(/`([^`]+)`/g, "$1")
