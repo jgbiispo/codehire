@@ -1,7 +1,7 @@
 import express from "express";
 import { auth, user, company, application, job } from "./controllers/index.js";
 import { dbHealth } from "../db/sequelize.js";
-import { requireAuth } from "./middlewares/auth.js"; // ⬅️ path corrigido
+import { requireAuth, optionalAuth } from "./middlewares/auth.js";
 
 const router = express.Router();
 
@@ -39,11 +39,11 @@ router.post("/uploads/presign", requireAuth, (req, res) => { /* TODO */ });
 
 /* ========== JOBS ========== */
 router.post("/jobs", requireAuth, job.createJob);
-router.get("/jobs", job.listJobs);
-router.get("/jobs/:slug", job.getJobBySlug);
+router.get("/jobs", optionalAuth, job.listJobs);
+router.get("/jobs/:slug", optionalAuth, job.getJobBySlug);
 router.patch("/jobs/:id", requireAuth, job.updateJob);
 router.delete("/jobs/:id", requireAuth, job.deleteJob);
-router.post("/jobs/:id/duplicate", requireAuth, (req, res) => { /* TODO */ });
+router.post("/jobs/:id/duplicate", requireAuth, job.duplicateJob);
 router.post("/jobs/:id/bookmark", requireAuth, (req, res) => { /* TODO */ });
 router.delete("/jobs/:id/bookmark", requireAuth, (req, res) => { /* TODO */ });
 

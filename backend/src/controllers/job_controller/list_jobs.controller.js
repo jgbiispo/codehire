@@ -21,7 +21,7 @@ export default async function listJobs(req, res) {
 
     const { q, companyId, status, remote, tag, limit, offset, sort, order } = qSchema.parse(req.query);
     const where = {};
-   
+
     if (q) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${q}%` } },
@@ -29,7 +29,7 @@ export default async function listJobs(req, res) {
         { location: { [Op.iLike]: `%${q}%` } },
       ];
     }
-    
+
     if (companyId) where.company_id = companyId;
     if (typeof remote === "boolean") where.remote = remote;
     if (status) {

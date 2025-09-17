@@ -1,11 +1,33 @@
 import { z } from "zod";
-import { Job, Tag } from "../../../db/sequelize.js";
+import { Company, sequelize, Job, Tag } from "../../../db/sequelize.js";
+
+function slugify(str) {
+  return String(str)
+    .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+async function uniqueJobSlug(base, t) {
+  let s = base || "job";
+  let candidate = s;
+  let tries = 0;
+  while (true) {
+    const exists = await Job.findOne({ where: { slug: candidate }, attributes: ["id"], transaction: t });
+    if (!exists) return candidate;
+    tries += 1;
+    candidate = `${s}-${rand(4)}`;
+    if (tries > 20) throw new Error("SLUG_COLLISION");
+  }
+}
 
 const paramsSchema = z.object({
   id: z.uuid(),
 });
 
 const bodySchema = z.object({
+  companyId: z.uuid(),
   title: z.string().min(3).max(140).optional(),
   descriptionMd: z.string().min(1).max(20000).optional(),
   employmentType: z.enum(["full_time", "part_time", "contract", "internship", "temporary"]).optional(),
@@ -30,6 +52,7 @@ const bodySchema = z.object({
 );
 
 export default async function updateJob(req, res) {
+  const t = await sequelize.transaction();
   try {
     const uid = req.user?.id;
     const { id } = paramsSchema.parse(req.params);
@@ -37,6 +60,9 @@ export default async function updateJob(req, res) {
 
     const job = await Job.findByPk(id);
     if (!job) { await t.rollback(); return res.status(404).json({ error: { code: "JOB_NOT_FOUND" } }); }
+
+    const company = await Company.findByPk(payload.companyId, { transaction: t, lock: t.LOCK.UPDATE });
+    if (!company) { await t.rollback(); return res.status(404).json({ error: { code: "COMPANY_NOT_FOUND" } }); }
 
     const isAdmin = req.user?.role === "admin";
     const isOwner = job.company_id === uid;
@@ -46,8 +72,9 @@ export default async function updateJob(req, res) {
     }
 
     if (payload.title !== undefined) {
+      let baseSlug = slugify(`${payload.title}-${company.slug || company.name || ""}`.trim());
       job.title = payload.title;
-      job.slug = payload.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+      job.slug = await uniqueJobSlug(baseSlug, t);
     }
 
     if (payload.descriptionMd !== undefined) job.description_md = payload.descriptionMd;
