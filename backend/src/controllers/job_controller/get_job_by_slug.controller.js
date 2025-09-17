@@ -1,18 +1,23 @@
 import { z } from "zod";
-import { Company, Job, Tag } from "../../../db/sequelize.js";
+import { Op } from "sequelize";
+import { Company, Job, Tag, Bookmark } from "../../../db/sequelize.js";
 
-const paramsSchema = z.object({
-  slug: z.string().min(1),
-});
+const paramsSchema = z.object({ slug: z.string().min(1) });
 
 export default async function getJobBySlug(req, res) {
   try {
     const { slug } = paramsSchema.parse(req.params);
+    const uid = req.user?.id || null;
 
+    // Apenas vaga pública e vigente (approved + não expirada)
     const job = await Job.findOne({
-      where: { slug, status: "approved" },
+      where: {
+        slug,
+        status: "approved",
+        [Op.or]: [{ expires_at: null }, { expires_at: { [Op.gt]: new Date() } }],
+      },
       include: [
-        { model: Company, as: "company", attributes: ["id", "name", "slug", "logo_url", "website", "verified"] },
+        { model: Company, as: "company", attributes: ["id", "name", "slug", "logo_url", "website", "verified", "location"] },
         { model: Tag, as: "tags", attributes: ["id", "name", "slug", "type"], through: { attributes: [] } },
       ],
     });
@@ -21,8 +26,14 @@ export default async function getJobBySlug(req, res) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Vaga não encontrada." } });
     }
 
-    const j = job.get({ plain: true });
+    // Flag de bookmark (se autenticado)
+    let bookmarked = false;
+    if (uid) {
+      const bm = await Bookmark.findOne({ where: { user_id: uid, job_id: job.id }, attributes: ["created_at"] });
+      bookmarked = !!bm;
+    }
 
+    const j = job.get({ plain: true });
     const pub = {
       id: j.id,
       title: j.title,
@@ -39,15 +50,25 @@ export default async function getJobBySlug(req, res) {
       featuredUntil: j.featured_until,
       postedAt: j.posted_at,
       expiresAt: j.expires_at,
-    }
+      company: j.company && {
+        id: j.company.id,
+        name: j.company.name,
+        slug: j.company.slug,
+        logoUrl: j.company.logo_url,
+        website: j.company.website,
+        verified: j.company.verified,
+        location: j.company.location,
+      },
+      tags: (j.tags || []).map(tg => ({ id: tg.id, name: tg.name, slug: tg.slug, type: tg.type })),
+      bookmarked,
+    };
 
-    return res.json(pub);
-
+    return res.json({ job: pub });
   } catch (e) {
     if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "INVALID_REQUEST", message: e.errors.map(err => err.message).join(", ") } });
+      return res.status(400).json({ error: { code: "INVALID_REQUEST", details: e.errors } });
     }
-    console.error(e);
-    return res.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Ocorreu um erro interno." } });
+    console.error("[jobs.getBySlug]", e);
+    return res.status(500).json({ error: { code: "INTERNAL_ERROR" } });
   }
 }

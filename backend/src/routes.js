@@ -1,11 +1,11 @@
 import express from "express";
-import { auth, user, company, application, job } from "./controllers/index.js";
+import { auth, user, company, application, job, feed } from "./controllers/index.js";
 import { dbHealth } from "../db/sequelize.js";
 import { requireAuth, optionalAuth } from "./middlewares/auth.js";
 
 const router = express.Router();
 
-// Health check (único)
+// Health check
 router.get("/health", async (req, res) => {
   try {
     await dbHealth();
@@ -34,7 +34,7 @@ router.post("/companies", requireAuth, company.createCompany);
 router.patch("/companies/:id", requireAuth, company.updateCompany);
 router.post("/companies/:id/verify", requireAuth, company.verifyCompany);
 
-/* ========== UPLOADS ========== */
+/* ========== UPLOADS S3 ========== */
 router.post("/uploads/presign", requireAuth, (req, res) => { /* TODO */ });
 
 /* ========== JOBS ========== */
@@ -60,11 +60,9 @@ router.get("/tags/popular", (req, res) => { /* TODO */ });
 router.get("/search/jobs", (req, res) => { /* TODO */ });
 
 /* ========== FEEDS ========== */
-router.get("/rss/jobs.xml", (req, res) => { /* TODO */ });
-router.get("/sitemap.xml", (req, res) => { /* TODO */ });
+router.get("/rss/jobs.xml", feed.rssJobs);
 
 /* ========== ADMIN ========== */
-// ideal: router.use("/admin", requireAuth, requireAdmin)
 router.get("/admin/jobs", requireAuth, (req, res) => { /* TODO */ });
 router.post("/admin/jobs/:id/approve", requireAuth, (req, res) => { /* TODO */ });
 router.post("/admin/jobs/:id/reject", requireAuth, (req, res) => { /* TODO */ });
