@@ -1,137 +1,31 @@
-# CodeHire – Job board remoto-first
+# CodeHire
 
-Portal de vagas estilo RemoteOK, com backend em **Node.js/Express**, **PostgreSQL** e **Sequelize**.  
-Inclui autenticação (cookies HttpOnly), CRUD de empresas e vagas, candidaturas, tags, bookmarks, migrations e validações com **Zod**.
+O CodeHire é um portal de vagas inspirado no RemoteOK, pensado para quem contrata e para quem busca oportunidades com **foco em tecnologia** e **trabalho remoto** (mas sem limitar vagas presenciais). A proposta é ser simples, direto e confiável.
 
-> Status: MVP em desenvolvimento. Tokens de acesso/refresh ainda em **modo stub** (trocar por JWT em produção).
+## O que dá pra fazer
 
----
+- **Publicar vagas** de forma rápida e organizada.
+- **Buscar e filtrar** por stack, senioridade, regime e faixa salarial.
+- **Salvar vagas** para ver depois.
+- **Aplicar** usando um perfil único (currículo + carta).
+- **Verificação de empresas** (selo de confiança).
+- **Moderação leve** para manter a qualidade do conteúdo.
 
-## Sumário
+## Para quem é
 
-- [Stack](#stack)
-- [Pré-requisitos](#pré-requisitos)
-- [Configuração](#configuração)
-- [Scripts](#scripts)
-- [Banco de dados](#banco-de-dados)
-- [Executando](#executando)
-- [Estrutura de pastas](#estrutura-de-pastas-backend)
-- [Rotas principais](./backend/DOCS.MD/#rotas-principais)
-- [Exemplos de requisição](./backend/DOCS.MD/#exemplos-de-requisição)
-- [Licença](#licença)
+- **Desenvolvedores** e profissionais de produto/dados/design que querem vagas claras, com salário e requisitos objetivos.
+- **Empresas e startups** que precisam contratar sem fricção e com transparência.
 
----
+## Por que existe
 
-## Stack
+Encontrar boas vagas ainda é mais difícil do que deveria. O CodeHire quer:
 
-- **Node.js** (ESM) + **Express**
-- **PostgreSQL** + **Sequelize** (+ **sequelize-cli** para migrations/seeders)
-- **Zod** (validação)
-- **bcrypt** (hash de senha)
-- **cookie-parser** (cookies HttpOnly)
-- Extensões Postgres: `pgcrypto`, `pg_trgm`
+- valorizar **transparência** (salário, stack e requisitos);
+- priorizar **remoto e flexibilidade**;
+- e dar **sinal de confiança** via verificação de empresas.
+
+## Status
+
+Projeto **em construção**. A API já funciona e parte do fluxo de empresas, vagas e candidaturas está pronto. Evoluções como feed público, sitemap, tags populares e painel do empregador estão no roadmap.
 
 ---
-
-## Pré-requisitos
-
-- Node 18+ (recomendado 20+)
-- PostgreSQL 13+
-- `psql` (opcional, para testar DB via terminal)
-
----
-
-## Configuração
-
-Crie um arquivo `.env` na raiz:
-
-```txt
-DATABASE_URL=postgres://usuario:senha@localhost:5432/portal_empregos
-PGSSL=false
-NODE_ENV=development
-PORT=3000
-COOKIE_DOMAIN=localhost
-```
-
-```bash
-# Instale as dependências:
-pnpm install
-```
-
-Configure o sequelize-cli com o arquivo .sequelizerc (já incluso no projeto) apontando para db/config.cjs.
-
-## Scripts
-
-```json
-{
-  "scripts": {
-    "dev": "nodemon src/index.js",
-    "start": "node src/index.js",
-    "db:create": "sequelize-cli db:create",
-    "db:migrate": "sequelize-cli db:migrate",
-    "db:migrate:undo": "sequelize-cli db:migrate:undo",
-    "db:seed": "sequelize-cli db:seed:all",
-    "db:seed:undo": "sequelize-cli db:seed:undo:all"
-  }
-}
-```
-
-> Dica: se precisar, rode pnpm db:create para criar o banco definido em DATABASE_URL.
-
-## Banco de dados
-
-As migrations criam:
-
-- users, refresh_tokens
-- companies
-- jobs
-- tags, job_tags (pivot)
-- applications
-- bookmarks
-- Enums: role, employment_type, experience_level, job_status, application_status, tag_type.
-
-Rode as migrations:
-
-```bash
-pnpm db:migrate
-```
-
-> Se algo falhar, use pnpm db:migrate:undo e tente novamente.
-
-## Executando
-
-```bash
-pnpm run dev
-
-# Você deve ver algo como:
-Server is running on http://localhost:3000
-Database connected successfully.
-```
-
-## Estrutura de pastas (BACKEND)
-
-```chsarp
-├─ backend
-│ ├─ db/
-│ │  ├─ config.cjs            # config do sequelize-cli (envs)
-│ │  ├─ migrations/          # migrations (0001...0007)
-│ │  └─ seeders/             # (opcional)
-│ ├─ src/
-│ │  ├─ db/
-│ │  │  └─ sequelize.js      # instancia do Sequelize + models + associações
-│ │  ├─ controllers/
-│ │  │  └─ auth_controller/
-│ │  │     └─ register.controller.js  # exemplo (login/refresh/logout em controllers irmãos)
-│ │  ├─ routes/
-│ │  │  └─ auth.routes.js    # rotas de auth (e demais: companies, jobs, tags, admin...)
-│ │  ├─ middlewares/         # (auth, rbac, rate-limit, error handler)
-│ │  ├─ index.js             # bootstrap do servidor
-│ │  └─ app.js               # configuração do Express
-│ ├─ .sequelizerc
-│ ├─ package.json
-└─ README.md
-```
-
-## Licença
-
-MIT © 2025 Nidus Soluções Digitais LTDA
