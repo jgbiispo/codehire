@@ -64,6 +64,7 @@ export const Job = sequelize.define("Job", {
   benefits: DataTypes.ARRAY(DataTypes.TEXT),
   posted_at: { type: DataTypes.DATE, defaultValue: Sequelize.fn("NOW") },
   expires_at: DataTypes.DATE,
+  created_at: { type: DataTypes.DATE, defaultValue: Sequelize.fn("NOW") },
 }, { tableName: "jobs", underscored: true, timestamps: false });
 
 export const Tag = sequelize.define("Tag", {
