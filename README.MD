@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/codehire-banner.png" alt="CodeHire — banner" width="100%" />
+</p>
+
 # CodeHire
 
 O CodeHire é um portal de vagas inspirado no RemoteOK, pensado para quem contrata e para quem busca oportunidades com **foco em tecnologia** e **trabalho remoto** (mas sem limitar vagas presenciais). A proposta é ser simples, direto e confiável.
