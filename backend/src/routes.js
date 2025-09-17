@@ -40,9 +40,9 @@ router.post("/uploads/presign", requireAuth, (req, res) => { /* TODO */ });
 /* ========== JOBS ========== */
 router.post("/jobs", requireAuth, job.createJob);
 router.get("/jobs", job.listJobs);
-router.get("/jobs/:slug", (req, res) => { /* TODO: job.getJobBySlug */ });
-router.patch("/jobs/:id", requireAuth, (req, res) => { /* TODO: job.updateJob */ });
-router.delete("/jobs/:id", requireAuth, (req, res) => { /* TODO: job.deleteJob */ });
+router.get("/jobs/:slug", job.getJobBySlug);
+router.patch("/jobs/:id", requireAuth, job.updateJob);
+router.delete("/jobs/:id", requireAuth, job.deleteJob);
 router.post("/jobs/:id/duplicate", requireAuth, (req, res) => { /* TODO */ });
 router.post("/jobs/:id/bookmark", requireAuth, (req, res) => { /* TODO */ });
 router.delete("/jobs/:id/bookmark", requireAuth, (req, res) => { /* TODO */ });
