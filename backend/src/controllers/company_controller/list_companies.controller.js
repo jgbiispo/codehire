@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { Op, Sequelize } from "sequelize";
-import { Company, Job, User } from "../../../db/sequelize.js";
+import { Company, Job } from "../../../db/sequelize.js";
 
 const qSchema = z.object({
   q: z.string().trim().min(1).max(100).optional(),
   verified: z.coerce.boolean().optional(),
-  ownerId: z.string().uuid().optional(),
+  ownerId: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   offset: z.coerce.number().int().min(0).default(0),
   sort: z.enum(["recent", "jobs"]).default("recent"),
