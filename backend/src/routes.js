@@ -44,8 +44,8 @@ router.get("/jobs/:slug", optionalAuth, job.getJobBySlug);
 router.patch("/jobs/:id", requireAuth, job.updateJob);
 router.delete("/jobs/:id", requireAuth, job.deleteJob);
 router.post("/jobs/:id/duplicate", requireAuth, job.duplicateJob);
-router.post("/jobs/:id/bookmark", requireAuth, (req, res) => { /* TODO */ });
-router.delete("/jobs/:id/bookmark", requireAuth, (req, res) => { /* TODO */ });
+router.post("/jobs/:id/bookmark", requireAuth, job.addBookmark);
+router.delete("/jobs/:id/bookmark", requireAuth, job.removeBookmark);
 
 /* ========== APPLICATIONS ========== */
 router.post("/jobs/:id/apply", requireAuth, application.applyToJob);

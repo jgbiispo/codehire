@@ -16,12 +16,10 @@ const bodySchema = z.object({
   timezone: z.string().max(120).optional(),
   visaSponsorship: z.coerce.boolean().optional(),
   location: z.string().max(160).optional(),
-
   status: z.enum(["draft", "pending", "approved", "rejected", "expired"]).optional(),
   featuredUntil: z.coerce.date().nullable().optional(),
   postedAt: z.coerce.date().nullable().optional(),
   expiresAt: z.coerce.date().nullable().optional(),
-
   requirements: z.array(z.string().min(1)).max(100).nullable().optional(),
   benefits: z.array(z.string().min(1)).max(100).nullable().optional(),
 
