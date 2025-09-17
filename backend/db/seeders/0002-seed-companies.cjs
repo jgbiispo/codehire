@@ -2,7 +2,6 @@
 
 const IDs = {
   admin: "11111111-1111-4111-8111-111111111111",
-  employer: "22222222-2222-4222-8222-222222222222",
   candidate: "33333333-3333-4333-8333-333333333333",
   nidus: "44444444-4444-4444-8444-444444444444",
   techcorp: "55555555-5555-4555-8555-555555555555",
@@ -23,7 +22,7 @@ module.exports = {
         verified_at: new Date(),
         verified_by: IDs.admin,
         socials: JSON.stringify({ linkedin: "https://linkedin.com/company/nidus" }),
-        owner_id: IDs.employer,
+        owner_id: IDs.nidus,
       },
       {
         id: IDs.techcorp,
@@ -37,7 +36,7 @@ module.exports = {
         verified_at: new Date(),
         verified_by: IDs.admin,
         socials: JSON.stringify({ site: "https://techcorp.com.br" }),
-        owner_id: IDs.employer,
+        owner_id: IDs.techcorp,
       },
     ]);
   },
