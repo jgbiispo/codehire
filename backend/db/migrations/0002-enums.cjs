@@ -15,7 +15,7 @@ module.exports = {
   async up(queryInterface /*, Sequelize */) {
     await ensureEnum(queryInterface, "role", ["candidate", "employer", "admin"]);
     await ensureEnum(queryInterface, "employment_type", ["full_time", "part_time", "contract", "internship", "temporary"]);
-    await ensureEnum(queryInterface, "experience_level", ["junior", "mid", "senior", "lead"]);
+    await ensureEnum(queryInterface, "experience_level", ["junior", "pleno", "senior", "lead"]);
     await ensureEnum(queryInterface, "job_status", ["draft", "pending", "approved", "rejected", "expired"]);
     await ensureEnum(queryInterface, "application_status", ["submitted", "in_review", "shortlisted", "rejected", "hired"]);
     await ensureEnum(queryInterface, "tag_type", ["tech", "role", "seniority", "other"]);
