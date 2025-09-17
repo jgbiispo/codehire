@@ -3,7 +3,7 @@ import express from 'express';
 import cookieParser from "cookie-parser";
 import cors from 'cors';
 import routes from './routes.js';
-import { sequelize } from "../db/sequelize.js";
+import { sequelize, initAssociations } from "../db/sequelize.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +18,7 @@ app.use('/', routes);
 (async () => {
   try {
     await sequelize.authenticate();
+    initAssociations();
     console.log('Database connected successfully.');
   } catch (error) {
     console.error('Unable to connect to the database:', error);

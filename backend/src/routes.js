@@ -1,18 +1,11 @@
 import express from "express";
-import {
-  authControllers,
-  userControllers,
-  companyControllers,
-  applicationControllers,
-  jobControllers,
-} from "./controllers/index.js";
-import { dbHealth, initAssociations } from "../db/sequelize.js";
-import { requireAuth } from "./middlewares/auth.js";
+import { auth, user, company, application, job } from "./controllers/index.js";
+import { dbHealth } from "../db/sequelize.js";
+import { requireAuth } from "./middlewares/auth.js"; // ⬅️ path corrigido
 
 const router = express.Router();
-initAssociations();
 
-// Health check
+// Health check (único)
 router.get("/health", async (req, res) => {
   try {
     await dbHealth();
@@ -22,60 +15,60 @@ router.get("/health", async (req, res) => {
   }
 });
 
-// Auth routes
-router.post("/register", authControllers().register);
-router.post("/login", authControllers().login);
-router.post("/refresh", authControllers().refresh);
-router.post("/logout", authControllers().logout);
+/* ========== AUTH ========== */
+router.post("/register", auth.register);
+router.post("/login", auth.login);
+router.post("/refresh", auth.refresh);
+router.post("/logout", auth.logout);
 
-// User routes
-router.get("/me", requireAuth, userControllers().getMe);
-router.patch("/me", requireAuth, userControllers().patchMe);
-router.get("/me/bookmarks", requireAuth, userControllers().list_bookmarks);
-router.get("/me/applications", requireAuth, userControllers().list_my_applications);
+/* ========== USER ========== */
+router.get("/me", requireAuth, user.getMe);
+router.patch("/me", requireAuth, user.patchMe);
+router.get("/me/bookmarks", requireAuth, user.list_bookmarks);
+router.get("/me/applications", requireAuth, user.list_my_applications);
 
-// Enterprise routes
-router.get("/companies", companyControllers().listCompanies);
-router.get("/companies/:slug", companyControllers().getCompanyBySlug);
-router.post("/companies", requireAuth, companyControllers().createCompany);
-router.patch("/companies/:id", requireAuth, companyControllers().updateCompany);
-router.post("/companies/:id/verify", requireAuth, companyControllers().verifyCompany);
+/* ========== COMPANIES ========== */
+router.get("/companies", company.listCompanies);
+router.get("/companies/:slug", company.getCompanyBySlug);
+router.post("/companies", requireAuth, company.createCompany);
+router.patch("/companies/:id", requireAuth, company.updateCompany);
+router.post("/companies/:id/verify", requireAuth, company.verifyCompany);
 
-// Uploads routes
-router.post("/uploads/presign", (req, res) => { });
+/* ========== UPLOADS ========== */
+router.post("/uploads/presign", requireAuth, (req, res) => { /* TODO */ });
 
-// Jobs routes
-router.post("/jobs", requireAuth, jobControllers().createJob);
-router.get("/jobs", (req, res) => { });
-router.get("/jobs/:slug", (req, res) => { });
-router.patch("/jobs/:id", (req, res) => { });
-router.delete("/jobs/:id", (req, res) => { });
-router.post("/jobs/:id/duplicate", (req, res) => { });
-router.post("/jobs/:id/bookmark", (req, res) => { });
-router.delete("/jobs/:id/bookmark", (req, res) => { });
+/* ========== JOBS ========== */
+router.post("/jobs", requireAuth, job.createJob);
+router.get("/jobs", job.listJobs);
+router.get("/jobs/:slug", (req, res) => { /* TODO: job.getJobBySlug */ });
+router.patch("/jobs/:id", requireAuth, (req, res) => { /* TODO: job.updateJob */ });
+router.delete("/jobs/:id", requireAuth, (req, res) => { /* TODO: job.deleteJob */ });
+router.post("/jobs/:id/duplicate", requireAuth, (req, res) => { /* TODO */ });
+router.post("/jobs/:id/bookmark", requireAuth, (req, res) => { /* TODO */ });
+router.delete("/jobs/:id/bookmark", requireAuth, (req, res) => { /* TODO */ });
 
-// Applications routes
-router.post("/jobs/:id/apply", requireAuth, applicationControllers().applyToJob);
-router.get("/employer/applications", requireAuth, applicationControllers().listEmployerApplications);
-router.get("/applications/:id", requireAuth, applicationControllers().getApplicationById);
-router.patch("/applications/:id", requireAuth, applicationControllers().updateApplicationStatus);
-router.delete("/applications/:id", requireAuth, applicationControllers().deleteApplication);
+/* ========== APPLICATIONS ========== */
+router.post("/jobs/:id/apply", requireAuth, application.applyToJob);
+router.get("/employer/applications", requireAuth, application.listEmployerApplications);
+router.get("/applications/:id", requireAuth, application.getApplicationById);
+router.patch("/applications/:id", requireAuth, application.updateApplicationStatus);
+router.delete("/applications/:id", requireAuth, application.deleteApplication);
 
-// Tags routes
-router.get("/tags", (req, res) => { });
-router.get("/tags/popular", (req, res) => { });
-router.get("/search/jobs", (req, res) => { });
+/* ========== TAGS/SEARCH ========== */
+router.get("/tags", (req, res) => { /* TODO */ });
+router.get("/tags/popular", (req, res) => { /* TODO */ });
+router.get("/search/jobs", (req, res) => { /* TODO */ });
 
-// Feed routes
-router.get("/rss/jobs.xml", (req, res) => { });
-router.get("/sitemap.xml", (req, res) => { });
-router.get("/health", (req, res) => { });
+/* ========== FEEDS ========== */
+router.get("/rss/jobs.xml", (req, res) => { /* TODO */ });
+router.get("/sitemap.xml", (req, res) => { /* TODO */ });
 
-// Admin routes
-router.get("/admin/jobs", (req, res) => { });
-router.post("/admin/jobs/:id/approve", (req, res) => { });
-router.post("/admin/jobs/:id/reject", (req, res) => { });
-router.get("/admin/users", (req, res) => { });
-router.get("/admin/companies", (req, res) => { });
+/* ========== ADMIN ========== */
+// ideal: router.use("/admin", requireAuth, requireAdmin)
+router.get("/admin/jobs", requireAuth, (req, res) => { /* TODO */ });
+router.post("/admin/jobs/:id/approve", requireAuth, (req, res) => { /* TODO */ });
+router.post("/admin/jobs/:id/reject", requireAuth, (req, res) => { /* TODO */ });
+router.get("/admin/users", requireAuth, (req, res) => { /* TODO */ });
+router.get("/admin/companies", requireAuth, (req, res) => { /* TODO */ });
 
 export default router;
