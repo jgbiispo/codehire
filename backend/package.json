@@ -4,15 +4,21 @@
   "description": "",
   "type": "module",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.17.0",
+    "pnpm": ">=8"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "db:init": "mkdir -p db/migrations db/seeders",
+    "db:init": "node scripts/mkdirs.mjs",
     "db:create": "sequelize-cli db:create",
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:seed": "sequelize-cli db:seed:all",
-    "db:seed:undo": "sequelize-cli db:seed:undo:all"
+    "db:seed:undo": "sequelize-cli db:seed:undo:all",
+    "db:sanity_check": "node scripts/run-psql.js ../scripts/sql/sanity_check.sql",
+    "db:sanity_fix": "node scripts/run-psql.js ../scripts/sql/sanity_fix.sql"
   },
   "keywords": [],
   "author": "",
