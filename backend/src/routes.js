@@ -1,5 +1,5 @@
 import express from "express";
-import { auth, user, company, application, job, feed, tag } from "./controllers/index.js";
+import { auth, user, company, application, job, feed, tag, admin } from "./controllers/index.js";
 import { dbHealth } from "../db/sequelize.js";
 import { requireAuth, optionalAuth } from "./middlewares/auth.js";
 
@@ -63,10 +63,10 @@ router.get("/search/jobs", job.searchJobs);
 router.get("/rss/jobs.xml", feed.rssJobs);
 
 /* ========== ADMIN ========== */
-router.get("/admin/jobs", requireAuth, (req, res) => { /* TODO */ });
-router.post("/admin/jobs/:id/approve", requireAuth, (req, res) => { /* TODO */ });
-router.post("/admin/jobs/:id/reject", requireAuth, (req, res) => { /* TODO */ });
-router.get("/admin/users", requireAuth, (req, res) => { /* TODO */ });
-router.get("/admin/companies", requireAuth, (req, res) => { /* TODO */ });
+router.get("/admin/jobs", requireAuth, admin.listJobs);
+router.post("/admin/jobs/:id/approve", requireAuth, admin.approveJob);
+router.post("/admin/jobs/:id/reject", requireAuth, admin.rejectJob);
+router.get("/admin/users", requireAuth, admin.listUsers);
+router.get("/admin/companies", requireAuth, admin.listCompanies);
 
 export default router;

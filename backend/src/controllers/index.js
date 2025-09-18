@@ -5,9 +5,28 @@ import * as application from "./application_controller/index.js";
 import * as job from "./job_controller/index.js";
 import * as feed from "./feed_controller/index.js";
 import * as tag from "./tag_controller/index.js";
+import * as admin from "./admin_controller/index.js";
 
-export const controllers = Object.freeze({ auth, user, company, application, job, feed, tag });
+export const controllers = Object.freeze({
+  auth,
+  user,
+  company,
+  application,
+  job,
+  feed,
+  tag,
+  admin
+});
 
-export { auth, user, company, application, job, feed, tag };
+export {
+  auth,
+  user,
+  company,
+  application,
+  job,
+  feed,
+  tag,
+  admin
+};
 
 export default controllers;
