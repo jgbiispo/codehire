@@ -64,11 +64,6 @@ export default async function duplicateJob(req, res, next) {
     }
 
     const isAdmin = role === "admin";
-    const isOwner = targetCompany.owner_id === uid;
-    if (!isAdmin && !isOwner) {
-      await t.rollback();
-      throw httpError(403, "FORBIDDEN", "Apenas administradores ou proprietários da empresa podem duplicar vagas para esta empresa.");
-    }
 
     const title = payload.title ?? source.title;
     const description_md = payload.descriptionMd ?? source.description_md;

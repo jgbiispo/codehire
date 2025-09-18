@@ -12,9 +12,7 @@ const bodySchema = z.object({
 export default async function applyToJob(req, res, next) {
   try {
     const uid = req.user?.id;
-    const role = req.user?.role;
     if (!uid) throw httpError(401, "UNAUTHORIZED");
-    if (role !== "candidate") throw httpError(403, "FORBIDDEN", "Apenas candidatos podem se candidatar a vagas.");
 
     const { id: jobId } = paramsSchema.parse(req.params);
     const { resumeUrl, coverLetterMd, answers } = bodySchema.parse(req.body);

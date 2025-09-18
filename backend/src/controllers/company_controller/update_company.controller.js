@@ -24,12 +24,6 @@ export default async function updateCompany(req, res, next) {
     const company = await Company.findByPk(id, { attributes: ["id", "owner_id", "name", "slug", "logo_url", "website", "description_md", "location", "verified", "socials"] });
     if (!company) throw httpError(404, "Empresa não encontrada.");
 
-    // Permissão: admin OU owner
-    const isAdmin = role === "admin";
-    const isOwner = company.owner_id === uid;
-
-    if (!isAdmin && !isOwner) throw httpError(403, "Forbidden");
-
     if (data.name !== undefined) company.name = data.name;
     if (data.website !== undefined) company.website = data.website;
     if (data.description !== undefined) company.description_md = data.description;

@@ -13,13 +13,6 @@ export default async function deleteJob(req, res, next) {
     const job = await Job.findByPk(id);
     if (!job) throw httpError(404, "NOT_FOUND", "Vaga não encontrada.");
 
-    const isAdmin = req.user?.role === "admin";
-    const isOwner = job.company_id === uid;
-
-    if (!isAdmin && !isOwner) {
-      throw httpError(403, "FORBIDDEN", "Sem permissão para deletar esta vaga.");
-    }
-
     await job.destroy();
     return res.status(204).send();
   } catch (e) {

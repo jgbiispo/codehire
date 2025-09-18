@@ -44,11 +44,6 @@ export default async function createJob(req, res) {
     if (!company) { await t.rollback(); return res.status(404).json({ error: { code: "COMPANY_NOT_FOUND" } }); }
 
     const isAdmin = role === "admin";
-    const isOwner = company.owner_id === uid;
-    if (!isAdmin && !isOwner) {
-      await t.rollback();
-      throw httpError(403, "FORBIDDEN", "Apenas administradores ou o dono da empresa podem criar vagas para ela.");
-    }
 
     const status = isAdmin ? (payload.status || "approved") : "pending";
     const featured_until = isAdmin ? payload.featuredUntil || null : null;

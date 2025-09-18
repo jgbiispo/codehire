@@ -12,8 +12,6 @@ const querySchema = z.object({
 
 export default async function listAdminCompanies(req, res, next) {
   try {
-    if (req.user?.role !== "admin") throw httpError(403, "FORBIDDEN", "Apenas administradores.");
-
     const { q, verified, limit, offset } = querySchema.parse(req.query);
     const where = {};
     if (typeof verified === "string") where.verified = verified === "true";

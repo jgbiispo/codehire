@@ -9,8 +9,6 @@ const bodySchema = z.object({
 
 export default async function rejectJob(req, res, next) {
   try {
-    if (req.user?.role !== "admin") throw httpError(403, "FORBIDDEN", "Apenas administradores.");
-
     const { id } = paramsSchema.parse(req.params);
     const { reason } = bodySchema.parse(req.body ?? {});
 

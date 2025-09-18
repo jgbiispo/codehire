@@ -7,10 +7,8 @@ const paramsSchema = z.object({ id: z.uuid() });
 export default async function unbookmarkJob(req, res, next) {
   try {
     const uid = req.user?.id;
-    const role = req.user?.role;
 
     if (!uid) throw httpError(401, "UNAUTHORIZED", "Token ausente.");
-    if (role !== "candidate") throw httpError(403, "FORBIDDEN", "Apenas candidatos podem remover favoritos.");
 
     const { id: jobId } = paramsSchema.parse(req.params);
 

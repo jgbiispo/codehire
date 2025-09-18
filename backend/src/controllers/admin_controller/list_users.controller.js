@@ -12,8 +12,6 @@ const querySchema = z.object({
 
 export default async function listAdminUsers(req, res, next) {
   try {
-    if (req.user?.role !== "admin") throw httpError(403, "FORBIDDEN", "Apenas administradores.");
-
     const { q, role, limit, offset } = querySchema.parse(req.query);
     const where = {};
     if (role) where.role = role;

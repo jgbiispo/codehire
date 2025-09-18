@@ -6,15 +6,13 @@ import { httpError } from "../../server/http-error.js";
 const querySchema = z.object({
   status: z.enum(["draft", "pending", "approved", "rejected", "expired"]).optional(),
   q: z.string().trim().optional(),
-  companyId: z.string().uuid().optional(),
+  companyId: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
 export default async function listAdminJobs(req, res, next) {
   try {
-    if (req.user?.role !== "admin") throw httpError(403, "FORBIDDEN", "Apenas administradores.");
-
     const { status, q, companyId, limit, offset } = querySchema.parse(req.query);
     const where = {};
     if (status) where.status = status;

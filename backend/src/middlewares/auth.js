@@ -1,31 +1,47 @@
 import { getAccessTokenFromReq, verifyAccessToken } from "../lib/jwt.js";
+import { httpError } from "../server/http-error.js";
+import jwt from "jsonwebtoken";
+
+function verifyAccess(token) {
+  if (!token) return null;
+  try {
+    const secret = process.env.AUTH_ACCESS_SECRET;
+    if (!secret) throw new Error("Missing AUTH_ACCESS_SECRET");
+    return jwt.verify(token, secret);
+  } catch {
+    return null;
+  }
+}
 
 export function requireAuth(req, res, next) {
   try {
     const token = getAccessTokenFromReq(req);
-    if (!token) return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Token ausente." } });
+    if (!token) throw httpError(401, "UNAUTHORIZED", "Token não fornecido.");
     const payload = verifyAccessToken(token);
     req.user = { id: payload.sub, role: payload.role };
     next();
   } catch (e) {
-    if (e.name === "TokenExpiredError") {
-      return res.status(401).json({ error: { code: "TOKEN_EXPIRED", message: "Token expirado." } });
-    }
-
-    if (e.name === "JsonWebTokenError") {
-      return res.status(401).json({ error: { code: "INVALID_TOKEN", message: "Token inválido." } });
-    }
-
-    return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Token inválido/expirado." } });
+    next(e);
   }
 }
 
+
 export function optionalAuth(req, _res, next) {
-  const token = getAccessTokenFromReq(req);
-  if (!token) return next();
-  try {
-    const payload = verifyAccessToken(token);
-    req.user = { id: payload.sub, role: payload.role };
-  } catch { /* ignore */ }
+  const payload = verifyAccess(readAccessFromCookies(req));
+  if (payload?.sub) {
+    req.user = { id: payload.sub, role: payload.role, email: payload.email ?? null };
+  }
   next();
+}
+
+export function requireRole(...allowed) {
+  return function (req, res, next) {
+    const role = req.user?.role;
+    if (!role || !allowed.includes(role)) {
+      return res.status(403).json({
+        error: { code: "FORBIDDEN", message: "Permissão insuficiente.", requestId: req.id },
+      });
+    }
+    next();
+  };
 }

@@ -8,15 +8,10 @@ export default async function addBookmarkJob(req, res, next) {
   const t = await sequelize.transaction();
   try {
     const uid = req.user?.id;
-    const role = req.user?.role;
+
     if (!uid) {
       await t.rollback();
       throw httpError(401, "UNAUTHORIZED", "Token ausente.");
-    }
-
-    if (role !== "candidate") {
-      await t.rollback();
-      throw httpError(403, "FORBIDDEN", "Apenas candidatos podem salvar vagas.");
     }
 
     const { id: jobId } = paramsSchema.parse(req.params);

@@ -15,15 +15,9 @@ export default async function createCompany(req, res, next) {
   const t = await sequelize.transaction();
   try {
     const uid = req.user?.id;
-    const role = req.user?.role;
     if (!uid) throw httpError(401, "UNAUTHORIZED", "Token ausente.");
 
     const data = bodySchema.parse(req.body);
-
-    const isEmployer = role === "employer";
-    if (!isEmployer) {
-      throw httpError(403, "FORBIDDEN", "Apenas empregadores podem criar empresas.");
-    }
 
     const company = await Company.create({
       owner_id: uid,

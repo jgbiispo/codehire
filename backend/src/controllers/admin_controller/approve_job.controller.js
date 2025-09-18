@@ -10,8 +10,6 @@ const bodySchema = z.object({
 
 export default async function approveJob(req, res, next) {
   try {
-    if (req.user?.role !== "admin") throw httpError(403, "FORBIDDEN", "Apenas administradores.");
-
     const { id } = paramsSchema.parse(req.params);
     const { postedAt, featuredUntil } = bodySchema.parse(req.body ?? {});
 

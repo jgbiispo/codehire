@@ -6,7 +6,6 @@ const paramsSchema = z.object({ id: z.uuid() });
 
 export default async function verifyCompany(req, res, next) {
   try {
-    if (req.user?.role !== "admin") throw httpError(403, "FORBIDDEN", "Apenas administradores podem verificar empresas.");
     const { id } = paramsSchema.parse(req.params);
     const c = await Company.findByPk(id);
     if (!c) throw httpError(404, "NOT_FOUND", "Empresa não encontrada.");

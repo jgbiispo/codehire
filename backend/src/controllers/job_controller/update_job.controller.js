@@ -62,10 +62,7 @@ export default async function updateJob(req, res) {
       if (!company) throw Object.assign(new Error("COMPANY_NOT_FOUND"), { status: 404 });
 
       const isAdmin = role === "admin";
-      const isOwner = company.owner_id === uid;
-      if (!isAdmin && !isOwner) {
-        throw Object.assign(new Error("FORBIDDEN"), { status: 403, message: "Você não pode editar esta vaga." });
-      }
+
 
       if (payload.companyId && payload.companyId !== job.company_id) {
         throw Object.assign(new Error("COMPANY_IMMUTABLE"), { status: 400, message: "companyId não pode ser alterado." });
