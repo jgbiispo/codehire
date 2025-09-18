@@ -34,7 +34,6 @@ export function applyRateLimiting(app) {
     standardHeaders: true,
     legacyHeaders: false,
     handler: json429("Muitas requisições. Tente novamente em instantes.", "RATE_LIMIT_GENERAL"),
-    keyGenerator: (req) => req.ip,
   });
 
   // Limite mais rígido p/ rotas de autenticação
@@ -44,7 +43,6 @@ export function applyRateLimiting(app) {
     standardHeaders: true,
     legacyHeaders: false,
     handler: json429("Muitas tentativas de login/registro. Aguarde um pouco.", "RATE_LIMIT_AUTH"),
-    keyGenerator: (req) => req.ip,
     skipFailedRequests: false,
     skipSuccessfulRequests: false,
   });
@@ -56,7 +54,7 @@ export function applyRateLimiting(app) {
     standardHeaders: true,
     legacyHeaders: false,
     handler: json429("Muitas operações de escrita. Tente novamente em instantes.", "RATE_LIMIT_WRITE"),
-    keyGenerator: (req) => req.ip,
+
     skip: (req) => ["GET", "HEAD", "OPTIONS"].includes(req.method),
   });
 

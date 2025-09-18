@@ -11,7 +11,7 @@ export default async function updateApplicationStatus(req, res, next) {
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) throw new httpError(401, "UNAUTHORIZED");
+    if (!uid) throw httpError(401, "UNAUTHORIZED");
 
     const { id } = pSchema.parse(req.params);
     const { status } = bSchema.parse(req.body);
@@ -19,11 +19,11 @@ export default async function updateApplicationStatus(req, res, next) {
     const app = await Application.findByPk(id, {
       include: [{ model: Job, as: "job", include: [{ model: Company, as: "company", attributes: ["owner_id"] }] }],
     });
-    if (!app) throw new httpError(404, "NOT_FOUND");
+    if (!app) throw httpError(404, "NOT_FOUND");
 
     const isAdmin = role === "admin";
     const isOwner = app.job?.company?.owner_id === uid;
-    if (!isAdmin && !isOwner) throw new httpError(403, "FORBIDDEN", "Sem permissão para atualizar esta aplicação.");
+    if (!isAdmin && !isOwner) throw httpError(403, "FORBIDDEN", "Sem permissão para atualizar esta aplicação.");
 
     app.status = status;
     await app.save();
