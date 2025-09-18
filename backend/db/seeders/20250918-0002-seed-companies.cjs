@@ -5,8 +5,8 @@ module.exports = {
 
     const companies = [
       {
-        id: "018c-compA-0000-0000-0000-000000000101",
-        owner_id: "018c-emplA-0000-0000-0000-000000000002",
+        id: "aaaabbbb-cccc-4ddd-8eee-ffffffff0001",
+        owner_id: "22222222-2222-4222-8222-222222222222", // Alice
         name: "Nidus Solutions",
         slug: "nidus-solutions",
         logo_url: "https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=100&h=100&fit=crop&crop=center",
@@ -16,11 +16,11 @@ module.exports = {
         verified: true,
         socials: JSON.stringify({ linkedin: "https://linkedin.com/company/nidus" }),
         verified_at: now,
-        verified_by: "018c-admin-0000-0000-0000-000000000001",
+        verified_by: "11111111-1111-4111-8111-111111111111", // Admin
       },
       {
-        id: "018c-compB-0000-0000-0000-000000000102",
-        owner_id: "018c-emplB-0000-0000-0000-000000000003",
+        id: "aaaabbbb-cccc-4ddd-8eee-ffffffff0002",
+        owner_id: "33333333-3333-4333-8333-333333333333", // Bob
         name: "TechCorp Brasil",
         slug: "techcorp-brasil",
         logo_url: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center",
@@ -30,11 +30,11 @@ module.exports = {
         verified: true,
         socials: JSON.stringify({ site: "https://techcorp.com.br" }),
         verified_at: now,
-        verified_by: "018c-admin-0000-0000-0000-000000000001",
+        verified_by: "11111111-1111-4111-8111-111111111111", // Admin
       },
       {
-        id: "018c-compC-0000-0000-0000-000000000103",
-        owner_id: "018c-emplA-0000-0000-0000-000000000002",
+        id: "aaaabbbb-cccc-4ddd-8eee-ffffffff0003",
+        owner_id: "22222222-2222-4222-8222-222222222222", // Alice
         name: "StartupXYZ",
         slug: "startupxyz",
         logo_url: "https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=100&h=100&fit=crop&crop=center",
@@ -54,9 +54,9 @@ module.exports = {
   async down(queryInterface) {
     await queryInterface.bulkDelete("companies", {
       id: [
-        "018c-compA-0000-0000-0000-000000000101",
-        "018c-compB-0000-0000-0000-000000000102",
-        "018c-compC-0000-0000-0000-000000000103",
+        "aaaabbbb-cccc-4ddd-8eee-ffffffff0001",
+        "aaaabbbb-cccc-4ddd-8eee-ffffffff0002",
+        "aaaabbbb-cccc-4ddd-8eee-ffffffff0003",
       ],
     });
   },

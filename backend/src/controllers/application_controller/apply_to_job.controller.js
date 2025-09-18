@@ -6,7 +6,7 @@ const paramsSchema = z.object({ id: z.uuid() });
 const bodySchema = z.object({
   resumeUrl: z.url(),
   coverLetterMd: z.string().max(20000).optional(),
-  answers: z.partialRecord(z.string(), z.string()).optional(),
+  answers: z.partialRecord(z.string(), z.unknown()).optional(),
 });
 
 export default async function applyToJob(req, res, next) {
