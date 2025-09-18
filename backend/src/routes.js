@@ -1,5 +1,5 @@
 import express from "express";
-import { auth, user, company, application, job, feed } from "./controllers/index.js";
+import { auth, user, company, application, job, feed, tag } from "./controllers/index.js";
 import { dbHealth } from "../db/sequelize.js";
 import { requireAuth, optionalAuth } from "./middlewares/auth.js";
 
@@ -55,9 +55,9 @@ router.patch("/applications/:id", requireAuth, application.updateApplicationStat
 router.delete("/applications/:id", requireAuth, application.deleteApplication);
 
 /* ========== TAGS/SEARCH ========== */
-router.get("/tags", (req, res) => { /* TODO */ });
-router.get("/tags/popular", (req, res) => { /* TODO */ });
-router.get("/search/jobs", (req, res) => { /* TODO */ });
+router.get("/tags", tag.listTags);
+router.get("/tags/popular", tag.popularTags);
+router.get("/search/jobs", job.searchJobs);
 
 /* ========== FEEDS ========== */
 router.get("/rss/jobs.xml", feed.rssJobs);

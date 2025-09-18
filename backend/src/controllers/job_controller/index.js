@@ -6,3 +6,4 @@ export { default as deleteJob } from "./delete_job.controller.js";
 export { default as duplicateJob } from "./duplicate_job.controller.js";
 export { default as addBookmark } from "./bookmark_controller/add_bookmark.controller.js";
 export { default as removeBookmark } from "./bookmark_controller/remove_bookmark.controller.js";
+export { default as searchJobs } from "../job_controller/search_jobs.js";
