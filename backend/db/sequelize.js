@@ -38,10 +38,9 @@ export const Company = sequelize.define("Company", {
   description_md: DataTypes.TEXT,
   location: DataTypes.TEXT,
   verified: { type: DataTypes.BOOLEAN, defaultValue: false },
-  socials: DataTypes.JSONB,
-  owner_id: DataTypes.UUID,
   verified_at: DataTypes.DATE,
-  verified_by: DataTypes.UUID,
+  verified_by: { type: DataTypes.UUID, allowNull: true },
+  socials: DataTypes.JSONB,
 }, { tableName: "companies", underscored: true, timestamps: false });
 
 export const Job = sequelize.define("Job", {
@@ -100,6 +99,7 @@ export function initAssociations() {
   // Companies
   User.hasMany(Company, { foreignKey: "owner_id", as: "companies" });
   Company.belongsTo(User, { foreignKey: "owner_id", as: "owner" });
+  Company.belongsTo(User, { foreignKey: "verified_by", as: "verifiedBy" });
 
   // Jobs
   Company.hasMany(Job, { foreignKey: "company_id", as: "jobs" });
