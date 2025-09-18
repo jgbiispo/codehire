@@ -86,7 +86,6 @@ router.delete("/jobs/:id/bookmark", requireAuth, requireRole("candidate"), job.r
 router.post("/jobs/:id/apply", requireAuth, requireRole("candidate"), application.applyToJob);
 router.get("/employer/applications", requireAuth, requireRole("employer", "admin"), application.listEmployerApplications);
 
-// (Opcional: proteger por dono/participante; mantendo requireAuth se a lógica já valida no controller)
 router.get("/applications/:id", requireAuth, application.getApplicationById);
 router.patch("/applications/:id", requireAuth, requireRole("employer", "admin"), application.updateApplicationStatus);
 router.delete("/applications/:id", requireAuth, requireRole("candidate", "admin"), application.deleteApplication);

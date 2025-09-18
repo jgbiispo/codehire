@@ -19,9 +19,9 @@
     "db:seed:undo": "sequelize-cli db:seed:undo:all",
     "db:sanity_check": "node scripts/run-psql.js ../scripts/sql/sanity_check.sql",
     "db:sanity_fix": "node scripts/run-psql.js ../scripts/sql/sanity_fix.sql",
-    "test": "cross-env NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha --timeout 15000 --reporter spec --file tests/setup/hooks.js \"tests/**/*.test.js\"",
+    "test": "cross-env NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha --timeout 1500 --reporter spec --file tests/setup/hooks.js \"tests/**/*.test.js\"",
     "test:watch": "pnpm test -- --watch",
-    "test:cov": "cross-env NODE_ENV=test DOTENV_CONFIG_PATH=.env.test nyc mocha --timeout 15000 --reporter spec --file tests/setup/hooks.js \"tests/**/*.test.js\""
+    "test:cov": "cross-env NODE_ENV=test DOTENV_CONFIG_PATH=.env.test nyc mocha --timeout 1500 --reporter spec --file tests/setup/hooks.js \"tests/**/*.test.js\""
   },
   "keywords": [],
   "author": "",
