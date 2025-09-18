@@ -140,7 +140,6 @@ export default async function createJob(req, res) {
     });
 
   } catch (e) {
-    await t.rollback();
     next(e);
   }
 }

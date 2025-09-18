@@ -148,19 +148,6 @@ export default async function updateJob(req, res) {
 
     return res.json({ job: result });
   } catch (e) {
-    const status = e.status || 500;
-    const code =
-      e.message === "JOB_NOT_FOUND" ? "JOB_NOT_FOUND" :
-        e.message === "COMPANY_NOT_FOUND" ? "COMPANY_NOT_FOUND" :
-          e.message === "FORBIDDEN" ? "FORBIDDEN" :
-            e.message === "COMPANY_IMMUTABLE" ? "COMPANY_IMMUTABLE" :
-              (e instanceof z.ZodError) ? "VALIDATION_ERROR" : "INTERNAL";
-
-    const body = (e instanceof z.ZodError)
-      ? { error: { code, details: e.errors } }
-      : { error: { code, message: e.message } };
-
-    console.error("[jobs.update]", { requestId: req.id, error: e });
-    return res.status(status).json(body);
+    next(e);
   }
 }

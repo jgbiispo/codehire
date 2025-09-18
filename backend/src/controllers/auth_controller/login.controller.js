@@ -47,7 +47,6 @@ export default async function login(req, res, next) {
     };
     return res.status(200).json({ user: pub });
   } catch (e) {
-    await t.rollback();
     return next(e);
   }
 }

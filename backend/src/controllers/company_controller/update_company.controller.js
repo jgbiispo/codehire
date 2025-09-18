@@ -12,7 +12,7 @@ const bodySchema = z.object({
   socials: z.record(z.string(), z.any()).optional(),
 });
 
-export default async function updateCompany(req, res) {
+export default async function updateCompany(req, res, next) {
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
@@ -52,6 +52,6 @@ export default async function updateCompany(req, res) {
       socials: c.socials || null,
     });
   } catch (e) {
-    throw httpError(500, "Erro ao atualizar empresa.", e);
+    next(e);
   }
 }

@@ -177,7 +177,6 @@ export default async function duplicateJob(req, res, next) {
     });
 
   } catch (e) {
-    await t.rollback();
     next(e);
   }
 }

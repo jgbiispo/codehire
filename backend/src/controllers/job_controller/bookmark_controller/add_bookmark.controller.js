@@ -54,7 +54,6 @@ export default async function addBookmarkJob(req, res, next) {
       created: !!created,
     });
   } catch (e) {
-    await t.rollback();
     next(e);
   }
 }

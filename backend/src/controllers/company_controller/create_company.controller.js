@@ -46,6 +46,6 @@ export default async function createCompany(req, res, next) {
 
     return res.status(201).json({ company: pub });
   } catch (e) {
-    return next(e);
+    next(e);
   }
 } 

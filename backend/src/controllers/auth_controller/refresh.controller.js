@@ -65,7 +65,6 @@ export default async function refresh(req, res, next) {
     };
     return res.status(200).json({ user: pub });
   } catch (e) {
-    await t.rollback();
     return next(e);
   }
 }
