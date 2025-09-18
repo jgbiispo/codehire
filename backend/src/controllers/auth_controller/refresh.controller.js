@@ -13,7 +13,7 @@ export default async function refresh(req, res) {
 
     let payload;
     try {
-      payload = verifyRefreshToken(raw); // { sub, role, jti, iat, exp }
+      payload = verifyRefreshToken(raw);
     } catch {
       await t.rollback();
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Refresh token inválido." } });
@@ -65,7 +65,7 @@ export default async function refresh(req, res) {
     return res.status(200).json({ user: pub });
   } catch (e) {
     await t.rollback();
-    console.error("[refresh]", e);
+    console.error("[refresh.error]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL", message: "Internal server error" } });
   }
 }

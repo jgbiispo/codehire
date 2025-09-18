@@ -20,7 +20,7 @@ export default async function getMe(req, res) {
 
     return res.json({ user: pub });
   } catch (e) {
-    console.error("[user.getMe]", e);
+    console.error("[user.getMe]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
   }
 }

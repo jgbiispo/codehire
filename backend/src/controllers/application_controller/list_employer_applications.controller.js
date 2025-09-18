@@ -51,8 +51,6 @@ export default async function listEmployerApplications(req, res) {
       ];
     }
 
-    const havingOwnerFilter = role === "admin" ? "" : `HAVING MAX(CASE WHEN "job->company"."owner_id" = :ownerId THEN 1 ELSE 0 END) = 1`;
-
     const { rows, count } = await Application.findAndCountAll({
       where: whereApp,
       include: [includeJob, includeCandidate],
@@ -102,7 +100,7 @@ export default async function listEmployerApplications(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
     }
-    console.error("[applications.listEmployer]", e);
+    console.error("[list.error]", { requestId: req.id, e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }

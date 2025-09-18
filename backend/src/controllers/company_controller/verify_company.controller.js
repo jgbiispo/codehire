@@ -37,7 +37,7 @@ export default async function verifyCompany(req, res) {
     if (e.name === "ZodError") {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
     }
-    console.error("[companies.verify]", e);
+    console.error("[verifyCompany.error]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }

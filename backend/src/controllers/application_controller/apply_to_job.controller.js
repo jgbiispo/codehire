@@ -58,7 +58,7 @@ export default async function applyToJob(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
     }
-    console.error("[applications.apply]", e);
+    console.error("[applyToJob.error]", { requestId: req.id, e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }

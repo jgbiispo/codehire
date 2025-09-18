@@ -25,7 +25,7 @@ export default async function deleteJob(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
     }
-    console.error("[jobs.delete]", e);
+    console.error("[jobs.delete]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }

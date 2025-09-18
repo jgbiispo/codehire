@@ -63,7 +63,7 @@ export default async function getCompanyBySlug(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Parâmetros inválidos.", details: e.errors } });
     }
-    console.error("[companies.getBySlug]", e);
+    console.error("[getBySlug.error]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
   }
 }

@@ -44,7 +44,7 @@ export default async function addBookmarkJob(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "INVALID_REQUEST", details: e.errors } });
     }
-    console.error("[jobs.bookmark]", e);
+    console.error("[jobs.bookmark]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }

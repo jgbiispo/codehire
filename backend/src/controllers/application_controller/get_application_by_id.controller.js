@@ -64,7 +64,7 @@ export default async function getApplicationById(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
     }
-    console.error("[applications.getById]", e);
+    console.error("[getApplicationById.error]", { requestId: req.id, e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }

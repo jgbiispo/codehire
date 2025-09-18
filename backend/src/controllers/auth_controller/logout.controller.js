@@ -9,13 +9,13 @@ export default async function logout(req, res) {
         const { jti } = verifyRefreshToken(raw);
         await RefreshToken.update({ revoked_at: new Date() }, { where: { id: jti, revoked_at: null } });
       } catch {
-        // token inválido/expirado — apenas limpe cookies TODO
+        console.log("Invalid refresh token on logout");
       }
     }
     clearAuthCookies(res);
     return res.status(204).send();
   } catch (e) {
-    console.error("[logout]", e);
+    console.error("[logout.error]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL", message: "Internal server error" } });
   }
 }

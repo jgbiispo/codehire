@@ -48,7 +48,7 @@ export default async function register(req, res) {
     return res.status(201).json({ user: pub });
   } catch (e) {
     await t.rollback();
-    console.error("[register]", e);
+    console.error("[register.error]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL", message: "Internal server error" } });
   }
 }

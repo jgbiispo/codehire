@@ -5,17 +5,22 @@ import cors from 'cors';
 import routes from './routes.js';
 import { sequelize, initAssociations } from "../db/sequelize.js";
 import { applyHttpHardening } from './server/security.js';
+import { applyRateLimiting } from './server/rate-limit.js';
+import { attachRequestId } from './server/error.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Apply security middlewares
-applyHttpHardening(app);
+// Security middlewares
+applyHttpHardening(app);  // Helmet, HPP, etc.
+applyRateLimiting(app);   // Rate limiting
+app.use(attachRequestId); // Request ID
 
 // Middleware
-app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
+
+// Rotas
 app.use('/api', routes);
 
 // Test DB connection

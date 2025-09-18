@@ -149,7 +149,7 @@ export default async function listJobs(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Parâmetros inválidos.", details: e.errors } });
     }
-    console.error("[jobs.list]", e);
+    console.error("[jobs.list]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Erro ao listar vagas." } });
   }
 }

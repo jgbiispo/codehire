@@ -54,7 +54,7 @@ export default async function patchMe(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Dados inválidos.", details: e.errors } });
     }
-    console.error("[user.patchMe]", e);
+    console.error("[user.patchMe]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
   }
 }

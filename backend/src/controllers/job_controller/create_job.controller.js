@@ -143,7 +143,7 @@ export default async function createJob(req, res) {
     if (e?.name === "SequelizeUniqueConstraintError") {
       return res.status(409).json({ error: { code: "DUPLICATE", message: "Título/slug já existente." } });
     }
-    console.error("[jobs.create]", e);
+    console.error("[jobs.create]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }

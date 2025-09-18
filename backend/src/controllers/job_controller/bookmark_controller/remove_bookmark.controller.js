@@ -20,7 +20,7 @@ export default async function unbookmarkJob(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "INVALID_REQUEST", details: e.errors } });
     }
-    console.error("[jobs.unbookmark]", e);
+    console.error("[jobs.unbookmark]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }

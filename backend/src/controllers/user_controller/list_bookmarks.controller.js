@@ -76,7 +76,7 @@ export default async function listBookmarks(req, res) {
     if (e instanceof z.ZodError) {
       return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Parâmetros inválidos.", details: e.errors } });
     }
-    console.error("[user.listBookmarks]", e);
+    console.error("[user.listBookmarks]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
   }
 }

@@ -160,7 +160,7 @@ export default async function updateJob(req, res) {
       ? { error: { code, details: e.errors } }
       : { error: { code, message: e.message } };
 
-    console.error("[jobs.update]", e);
+    console.error("[jobs.update]", { requestId: req.id, error: e });
     return res.status(status).json(body);
   }
 }

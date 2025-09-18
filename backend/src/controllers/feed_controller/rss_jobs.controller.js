@@ -131,7 +131,7 @@ ${xmlItems}
 
     return res.status(200).send(rss);
   } catch (e) {
-    console.error("[rss.jobs]", e);
+    console.error("[rss.jobs]", { requestId: req.id, error: e });
     return res.status(500).json({ error: { code: "INTERNAL" } });
   }
 }
