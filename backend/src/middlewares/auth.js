@@ -13,7 +13,7 @@ function verifyAccess(token) {
   }
 }
 
-export function requireAuth(req, res, next) {
+export function requireAuth(req, _res, next) {
   try {
     const token = getAccessTokenFromReq(req);
     if (!token) throw httpError(401, "UNAUTHORIZED", "Token não fornecido.");
