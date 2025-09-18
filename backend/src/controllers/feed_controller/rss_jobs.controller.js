@@ -22,7 +22,7 @@ const XML = {
 };
 
 function rfc1123(date = new Date()) {
-  return new Date(date).toUTCString(); x
+  return new Date(date).toUTCString();
 }
 
 function stripMd(md = "") {
@@ -39,7 +39,7 @@ function stripMd(md = "") {
     .trim();
 }
 
-export default async function rssJobs(req, res) {
+export default async function rssJobs(req, res, next) {
   try {
     const { limit } = qSchema.parse(req.query);
 

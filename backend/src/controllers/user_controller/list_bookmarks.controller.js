@@ -32,8 +32,8 @@ export default async function listBookmarks(req, res, next) {
             "company_id"
           ],
           include: [
-            { model: Company, as: "company", attributes: ["id", "name", "slug", "logo_url", "verified", "location"] }, // 👈 alias
-            { model: Tag, as: "tags", attributes: ["id", "name", "slug", "type"], through: { attributes: [] } },       // 👈 alias
+            { model: Company, as: "company", attributes: ["id", "name", "slug", "logo_url", "verified", "location"] },
+            { model: Tag, as: "tags", attributes: ["id", "name", "slug", "type"], through: { attributes: [] } },
           ],
         },
       ],
@@ -74,6 +74,7 @@ export default async function listBookmarks(req, res, next) {
 
     return res.json({ total: count, limit, offset, items });
   } catch (e) {
+    console.error(e);
     next(e);
   }
 }

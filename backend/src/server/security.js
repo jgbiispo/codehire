@@ -1,4 +1,3 @@
-// src/server/security.js
 import helmet from "helmet";
 import cors from "cors";
 import compression from "compression";

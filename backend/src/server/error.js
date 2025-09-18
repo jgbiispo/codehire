@@ -22,6 +22,7 @@ function isSequelizeValidation(err) {
 }
 
 export function errorHandler(err, req, res, next) {
+  const NODE_ENV = process.env.NODE_ENV || "development";
   if (res.headersSent) return next(err);
 
   // Mapeia status
@@ -66,9 +67,12 @@ export function errorHandler(err, req, res, next) {
     status,
     name: err.name,
     code: payload.error.code,
-    stack: process.env.NODE_ENV !== "production" ? err.stack : undefined,
+    stack: NODE_ENV === "development" ? err.stack : undefined,
   };
-  console[status >= 500 ? "error" : "warn"]("[error]", log);
+
+  if (NODE_ENV === "development") {
+    console[status >= 500 ? "error" : "warn"]("[error]", log);
+  }
 
   res.status(status).json(payload);
 }

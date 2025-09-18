@@ -47,6 +47,6 @@ export default async function login(req, res, next) {
     };
     return res.status(200).json({ user: pub });
   } catch (e) {
-    return next(e);
+    next(e);
   }
 }
