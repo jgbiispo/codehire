@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Op, Sequelize } from "sequelize";
 import { Job, Company, User, Tag } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const qSchema = z.object({
   q: z.string().trim().min(1).max(100).optional(),
@@ -14,7 +15,7 @@ const qSchema = z.object({
   order: z.enum(["asc", "desc"]).default("desc"),
 });
 
-export default async function listJobs(req, res) {
+export default async function listJobs(req, res, next) {
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
@@ -36,7 +37,7 @@ export default async function listJobs(req, res) {
       if (["admin", "employer"].includes(role)) {
         where.status = status;
       } else {
-        return res.status(403).json({ error: { code: "FORBIDDEN", message: "Apenas administradores e empregadores podem filtrar por status." } });
+        throw httpError(403, "FORBIDDEN", "Você não pode filtrar vagas por status.");
       }
     } else {
       where.status = "approved";
@@ -74,13 +75,12 @@ export default async function listJobs(req, res) {
     ];
 
     if (role === "admin" || role === "employer") {
-      // employers can see jobs of their companies
       if (role === "employer" && uid) {
         const employerCompanies = await Company.findAll({ where: { owner_id: uid }, attributes: ["id"] });
         const employerCompanyIds = employerCompanies.map(c => c.id);
         if (where.company_id) {
           if (!employerCompanyIds.includes(where.company_id)) {
-            return res.status(403).json({ error: { code: "FORBIDDEN", message: "Você não pode ver vagas de outras empresas." } });
+            throw httpError(403, "FORBIDDEN", "Você não pode listar vagas de empresas que não são suas.");
           }
         } else {
           where.company_id = { [Op.in]: employerCompanyIds };
@@ -146,10 +146,6 @@ export default async function listJobs(req, res) {
 
     return res.json({ total: count, limit, offset, items });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Parâmetros inválidos.", details: e.errors } });
-    }
-    console.error("[jobs.list]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Erro ao listar vagas." } });
+    next(e);
   }
 }

@@ -13,7 +13,7 @@ const querySchema = z.object({
   withCount: z.coerce.boolean().optional().default(false)
 });
 
-export default async function listTags(req, res) {
+export default async function listTags(req, res, next) {
   try {
     const { q, type, limit, offset, sort, withCount } = querySchema.parse(req.query);
 
@@ -92,10 +92,6 @@ export default async function listTags(req, res) {
       }),
     });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
-    }
-    console.error("[tags.list]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    next(e);
   }
 }

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { sequelize, Job } from "../../../db/sequelize.js";
-import httpError from "../../../src/utils/httpError.js";
+import { httpError } from "../../server/http-error.js";
 
 const paramsSchema = z.object({ id: z.string().uuid() });
 const bodySchema = z.object({

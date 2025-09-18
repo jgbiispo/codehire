@@ -4,7 +4,7 @@ import { Company, Job, Tag, Bookmark } from "../../../db/sequelize.js";
 
 const paramsSchema = z.object({ slug: z.string().min(1) });
 
-export default async function getJobBySlug(req, res) {
+export default async function getJobBySlug(req, res, next) {
   try {
     const { slug } = paramsSchema.parse(req.params);
     const uid = req.user?.id || null;
@@ -63,10 +63,6 @@ export default async function getJobBySlug(req, res) {
 
     return res.json({ job: pub });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "INVALID_REQUEST", details: e.errors } });
-    }
-    console.error("[jobs.getBySlug]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL_ERROR" } });
+    next(e);
   }
 }

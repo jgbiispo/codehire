@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Company, Job, Tag } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const paramsSchema = z.object({
   slug: z.string().min(1),
@@ -28,7 +29,7 @@ export default async function getCompanyBySlug(req, res) {
     });
 
     if (!company) {
-      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Empresa não encontrada." } });
+      throw httpError(404, "NOT_FOUND");
     }
 
     const c = company.get({ plain: true });
@@ -60,10 +61,6 @@ export default async function getCompanyBySlug(req, res) {
       })),
     });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Parâmetros inválidos.", details: e.errors } });
-    }
-    console.error("[getBySlug.error]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
+    next(e);
   }
 }

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Company, sequelize } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const bodySchema = z.object({
   name: z.string().min(2).max(120),
@@ -10,18 +11,18 @@ const bodySchema = z.object({
   socials: z.record(z.string(), z.any()).optional(),
 });
 
-export default async function createCompany(req, res) {
+export default async function createCompany(req, res, next) {
   const t = await sequelize.transaction();
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Token ausente." } });
+    if (!uid) throw httpError(401, "UNAUTHORIZED", "Token ausente.");
 
     const data = bodySchema.parse(req.body);
 
     const isEmployer = role === "employer";
     if (!isEmployer) {
-      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Sem permissão para criar empresas." } });
+      throw httpError(403, "FORBIDDEN", "Apenas empregadores podem criar empresas.");
     }
 
     const company = await Company.create({
@@ -45,10 +46,6 @@ export default async function createCompany(req, res) {
 
     return res.status(201).json({ company: pub });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Dados inválidos.", details: e.errors } });
-    }
-    console.error("[createCompany.error] Unexpected error:", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
+    return next(e);
   }
 } 

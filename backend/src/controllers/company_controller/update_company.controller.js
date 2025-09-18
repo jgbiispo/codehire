@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Company } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const paramsSchema = z.object({ id: z.uuid() });
 const bodySchema = z.object({
@@ -15,20 +16,19 @@ export default async function updateCompany(req, res) {
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Token ausente." } });
+    if (!uid) throw httpError(401, "Unauthorized");
 
     const { id } = paramsSchema.parse(req.params);
     const data = bodySchema.parse(req.body);
 
     const company = await Company.findByPk(id, { attributes: ["id", "owner_id", "name", "slug", "logo_url", "website", "description_md", "location", "verified", "socials"] });
-    if (!company) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Empresa não encontrada." } });
+    if (!company) throw httpError(404, "Empresa não encontrada.");
 
     // Permissão: admin OU owner
     const isAdmin = role === "admin";
     const isOwner = company.owner_id === uid;
-    if (!isAdmin && !isOwner) {
-      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Sem permissão para editar esta empresa." } });
-    }
+
+    if (!isAdmin && !isOwner) throw httpError(403, "Forbidden");
 
     if (data.name !== undefined) company.name = data.name;
     if (data.website !== undefined) company.website = data.website;
@@ -52,10 +52,6 @@ export default async function updateCompany(req, res) {
       socials: c.socials || null,
     });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Dados inválidos.", details: e.errors } });
-    }
-    console.error("[updateCompany.error]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
+    throw httpError(500, "Erro ao atualizar empresa.", e);
   }
 }

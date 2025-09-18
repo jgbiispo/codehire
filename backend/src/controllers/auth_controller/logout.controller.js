@@ -1,7 +1,7 @@
 import { getRefreshTokenFromReq, verifyRefreshToken, clearAuthCookies } from "../../lib/jwt.js";
 import { RefreshToken } from "../../../db/sequelize.js";
 
-export default async function logout(req, res) {
+export default async function logout(req, res, next) {
   try {
     const raw = getRefreshTokenFromReq(req);
     if (raw) {
@@ -9,13 +9,12 @@ export default async function logout(req, res) {
         const { jti } = verifyRefreshToken(raw);
         await RefreshToken.update({ revoked_at: new Date() }, { where: { id: jti, revoked_at: null } });
       } catch {
-        console.log("Invalid refresh token on logout");
+        // do nothing if token is invalid/expired
       }
     }
     clearAuthCookies(res);
     return res.status(204).send();
   } catch (e) {
-    console.error("[logout.error]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Internal server error" } });
+    return next(e);
   }
 }

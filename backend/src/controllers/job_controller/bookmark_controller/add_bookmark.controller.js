@@ -1,17 +1,22 @@
 import { z } from "zod";
 import { sequelize, Job, Bookmark } from "../../../../db/sequelize.js";
+import { httpError } from "../../../server/http-error.js";
 
 const paramsSchema = z.object({ id: z.uuid() });
 
-export default async function addBookmarkJob(req, res) {
+export default async function addBookmarkJob(req, res, next) {
   const t = await sequelize.transaction();
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) { await t.rollback(); return res.status(401).json({ error: { code: "UNAUTHORIZED" } }); }
+    if (!uid) {
+      await t.rollback();
+      throw httpError(401, "UNAUTHORIZED", "Token ausente.");
+    }
+
     if (role !== "candidate") {
       await t.rollback();
-      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Apenas candidatos podem salvar vagas." } });
+      throw httpError(403, "FORBIDDEN", "Apenas candidatos podem salvar vagas.");
     }
 
     const { id: jobId } = paramsSchema.parse(req.params);
@@ -21,10 +26,19 @@ export default async function addBookmarkJob(req, res) {
       transaction: t,
       lock: { level: t.LOCK.UPDATE, of: Job },
     });
-    if (!job) { await t.rollback(); return res.status(404).json({ error: { code: "JOB_NOT_FOUND" } }); }
+    if (!job) {
+      await t.rollback();
+      throw httpError(404, "NOT_FOUND", "Vaga não encontrada.");
+    }
     const isExpired = job.expires_at && new Date(job.expires_at) < new Date();
-    if (job.status !== "approved") { await t.rollback(); return res.status(400).json({ error: { code: "JOB_NOT_OPEN" } }); }
-    if (isExpired) { await t.rollback(); return res.status(400).json({ error: { code: "JOB_EXPIRED" } }); }
+    if (job.status !== "approved") {
+      await t.rollback();
+      throw httpError(400, "JOB_INACTIVE", "Vaga não está ativa.");
+    }
+    if (isExpired) {
+      await t.rollback();
+      throw httpError(400, "JOB_EXPIRED", "Vaga expirada.");
+    }
 
     const [row, created] = await Bookmark.findOrCreate({
       where: { user_id: uid, job_id: jobId },
@@ -41,10 +55,6 @@ export default async function addBookmarkJob(req, res) {
     });
   } catch (e) {
     await t.rollback();
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "INVALID_REQUEST", details: e.errors } });
-    }
-    console.error("[jobs.bookmark]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    next(e);
   }
 }

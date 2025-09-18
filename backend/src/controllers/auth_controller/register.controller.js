@@ -2,8 +2,9 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { User, RefreshToken, sequelize } from "../../../db/sequelize.js";
 import { tokensFromUser, hashToken, setAuthCookies } from "../../lib/jwt.js";
+import { httpError } from "../../server/http-error.js";
 
-export default async function register(req, res) {
+export default async function register(req, res, next) {
   const t = await sequelize.transaction();
   try {
     const schema = z.object({
@@ -18,7 +19,7 @@ export default async function register(req, res) {
     const existing = await User.findOne({ where: { email }, transaction: t, lock: t.LOCK.UPDATE });
     if (existing) {
       await t.rollback();
-      return res.status(400).json({ error: { code: "EMAIL_TAKEN", message: "Email already in use" } });
+      throw httpError(409, "USER_ALREADY_EXISTS", "Usuário com este email já existe.");
     }
 
     const password_hash = await bcrypt.hash(password, 12);
@@ -47,8 +48,6 @@ export default async function register(req, res) {
     };
     return res.status(201).json({ user: pub });
   } catch (e) {
-    await t.rollback();
-    console.error("[register.error]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Internal server error" } });
+    return next(e);
   }
 }

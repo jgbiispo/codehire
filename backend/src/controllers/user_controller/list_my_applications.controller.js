@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Application, Job, Company, Tag } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -7,10 +8,10 @@ const querySchema = z.object({
   status: z.enum(["submitted", "in_review", "shortlisted", "rejected", "hired"]).optional(),
 });
 
-export default async function listMyApplications(req, res) {
+export default async function listMyApplications(req, res, next) {
   try {
     const uid = req.user?.id;
-    if (!uid) return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Token ausente." } });
+    if (!uid) throw httpError(401, "UNAUTHORIZED", "Autenticação necessária.");
 
     const { limit, offset, status } = querySchema.parse(req.query);
 
@@ -75,10 +76,6 @@ export default async function listMyApplications(req, res) {
       items,
     });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Parâmetros inválidos.", details: e.errors } });
-    }
-    console.error("[user.listMyApplications]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
+    next(e);
   }
 }

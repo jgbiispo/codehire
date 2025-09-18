@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Op } from "sequelize";
 import { User } from "../../../db/sequelize.js";
-import httpError from "../../../src/utils/httpError.js";
+import { httpError } from "../../server/http-error.js";
 
 const querySchema = z.object({
   q: z.string().trim().optional(),              // busca por nome/email

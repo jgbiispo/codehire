@@ -7,6 +7,7 @@ import { sequelize, initAssociations } from "../db/sequelize.js";
 import { applyHttpHardening } from './server/security.js';
 import { applyRateLimiting } from './server/rate-limit.js';
 import { attachRequestId } from './server/error.js';
+import { errorHandler } from './server/error.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ app.use(cookieParser());
 
 // Rotas
 app.use('/api', routes);
+app.use(errorHandler);
 
 // Test DB connection
 (async () => {

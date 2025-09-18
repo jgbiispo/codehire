@@ -1,12 +1,13 @@
 import { User } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
-export default async function getMe(req, res) {
+export default async function getMe(req, res, next) {
   try {
     const uid = req.user?.id;
-    if (!uid) return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Token ausente." } });
+    if (!uid) throw httpError(401, "UNAUTHORIZED", "Usuário não autenticado.");
 
     const user = await User.findByPk(uid);
-    if (!user) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Usuário não encontrado." } });
+    if (!user) throw httpError(404, "NOT_FOUND", "Usuário não encontrado.");
 
     const pub = {
       id: user.id,
@@ -20,7 +21,6 @@ export default async function getMe(req, res) {
 
     return res.json({ user: pub });
   } catch (e) {
-    console.error("[user.getMe]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
+    next(e);
   }
 }

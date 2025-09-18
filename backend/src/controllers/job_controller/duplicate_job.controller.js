@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { sequelize, Job, Company, Tag } from "../../../db/sequelize.js";
 import { slugify, uniqueJobSlug } from "../../utils/slug.util.js";
+import { httpError } from "../../server/http-error.js";
 
-const paramsSchema = z.object({ id: z.string().uuid() });
+const paramsSchema = z.object({ id: z.uuid() });
 const bodySchema = z.object({
   companyId: z.uuid().optional(),
   title: z.string().min(3).max(140).optional(),
@@ -32,12 +33,15 @@ const bodySchema = z.object({
   { message: "salaryMin deve ser <= salaryMax quando ambos forem enviados.", path: ["salaryMin"] }
 );
 
-export default async function duplicateJob(req, res) {
+export default async function duplicateJob(req, res, next) {
   const t = await sequelize.transaction();
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) { await t.rollback(); return res.status(401).json({ error: { code: "UNAUTHORIZED" } }); }
+    if (!uid) {
+      await t.rollback();
+      throw httpError(401, "UNAUTHORIZED");
+    }
 
     const { id } = paramsSchema.parse(req.params);
     const payload = bodySchema.parse(req.body);
@@ -54,13 +58,16 @@ export default async function duplicateJob(req, res) {
 
     const targetCompanyId = payload.companyId ?? source.company_id;
     const targetCompany = await Company.findByPk(targetCompanyId, { transaction: t, lock: t.LOCK.UPDATE });
-    if (!targetCompany) { await t.rollback(); return res.status(404).json({ error: { code: "COMPANY_NOT_FOUND" } }); }
+    if (!targetCompany) {
+      await t.rollback();
+      throw httpError(404, "COMPANY_NOT_FOUND");
+    }
 
     const isAdmin = role === "admin";
     const isOwner = targetCompany.owner_id === uid;
     if (!isAdmin && !isOwner) {
       await t.rollback();
-      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Você não pode criar vagas para esta empresa." } });
+      throw httpError(403, "FORBIDDEN", "Apenas administradores ou proprietários da empresa podem duplicar vagas para esta empresa.");
     }
 
     const title = payload.title ?? source.title;
@@ -171,10 +178,6 @@ export default async function duplicateJob(req, res) {
 
   } catch (e) {
     await t.rollback();
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "INVALID_REQUEST", details: e.errors } });
-    }
-    console.error("[jobs.duplicate]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL_SERVER_ERROR", message: e.message } });
+    next(e);
   }
 }

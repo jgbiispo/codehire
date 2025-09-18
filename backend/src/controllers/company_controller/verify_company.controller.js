@@ -1,16 +1,15 @@
 import { z } from "zod";
 import { Company } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
-const paramsSchema = z.object({ id: z.string().uuid() });
+const paramsSchema = z.object({ id: z.uuid() });
 
-export default async function verifyCompany(req, res) {
+export default async function verifyCompany(req, res, next) {
   try {
-    if (req.user?.role !== "admin") {
-      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Apenas administradores." } });
-    }
+    if (req.user?.role !== "admin") throw httpError(403, "FORBIDDEN", "Apenas administradores podem verificar empresas.");
     const { id } = paramsSchema.parse(req.params);
     const c = await Company.findByPk(id);
-    if (!c) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Empresa não encontrada." } });
+    if (!c) throw httpError(404, "NOT_FOUND", "Empresa não encontrada.");
 
     if (!c.verified) {
       await c.update({
@@ -20,7 +19,7 @@ export default async function verifyCompany(req, res) {
       });
       await c.save();
     } else {
-      return res.status(400).json({ error: { code: "ALREADY_VERIFIED", message: "Empresa já verificada." } });
+      throw httpError(400, "ALREADY_VERIFIED", "Empresa já está verificada.");
     }
 
     const pub = {
@@ -34,10 +33,6 @@ export default async function verifyCompany(req, res) {
     return res.json({ company: pub });
 
   } catch (e) {
-    if (e.name === "ZodError") {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
-    }
-    console.error("[verifyCompany.error]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    next(e);
   }
 }

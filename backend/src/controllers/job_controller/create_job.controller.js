@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { sequelize, Job, Company, Tag } from "../../../db/sequelize.js";
 import { slugify, uniqueJobSlug } from "../../utils/slug.util.js";
+import { httpError } from "../../server/http-error.js";
 
 const bodySchema = z.object({
   companyId: z.uuid(),
@@ -32,7 +33,10 @@ export default async function createJob(req, res) {
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) { await t.rollback(); return res.status(401).json({ error: { code: "UNAUTHORIZED" } }); }
+    if (!uid) {
+      await t.rollback();
+      throw httpError(401, "UNAUTHORIZED");
+    }
 
     const payload = bodySchema.parse(req.body);
 
@@ -43,7 +47,7 @@ export default async function createJob(req, res) {
     const isOwner = company.owner_id === uid;
     if (!isAdmin && !isOwner) {
       await t.rollback();
-      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Você não pode criar vagas para esta empresa." } });
+      throw httpError(403, "FORBIDDEN", "Apenas administradores ou o dono da empresa podem criar vagas para ela.");
     }
 
     const status = isAdmin ? (payload.status || "approved") : "pending";
@@ -137,13 +141,6 @@ export default async function createJob(req, res) {
 
   } catch (e) {
     await t.rollback();
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
-    }
-    if (e?.name === "SequelizeUniqueConstraintError") {
-      return res.status(409).json({ error: { code: "DUPLICATE", message: "Título/slug já existente." } });
-    }
-    console.error("[jobs.create]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    next(e);
   }
 }

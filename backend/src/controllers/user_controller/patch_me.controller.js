@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { User } from '../../../db/sequelize.js';
+import { httpError } from "../../server/http-error.js";
 
 const bodyScheme = z.object({
   name: z.string().min(2).max(100).optional(),
@@ -16,14 +17,14 @@ const bodyScheme = z.object({
   { message: "Para alterar a senha, envie currentPassword e newPassword." }
 );
 
-export default async function patchMe(req, res) {
+export default async function patchMe(req, res, next) {
   try {
     const uid = req.user?.id;
-    if (!uid) return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Token ausente." } });
+    if (!uid) throw httpError(401, "UNAUTHORIZED", "Token ausente.");
 
     const updates = bodyScheme.parse(req.body);
     const user = await User.findByPk(uid);
-    if (!user) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Usuário não encontrado." } });
+    if (!user) throw httpError(404, "NOT_FOUND", "Usuário não encontrado.");
 
     if (updates.name !== undefined) user.name = updates.name;
     if (updates.headline !== undefined) user.headline = updates.headline;
@@ -32,7 +33,7 @@ export default async function patchMe(req, res) {
 
     if (updates.currentPassword && updates.newPassword) {
       const ok = await bcrypt.compare(updates.currentPassword, user.password_hash);
-      if (!ok) return res.status(400).json({ error: { code: "WRONG_PASSWORD", message: "Senha atual incorreta." } });
+      if (!ok) throw httpError(400, "INVALID_PASSWORD", "Senha atual incorreta.");
       user.password_hash = await bcrypt.hash(updates.newPassword, 12);
     }
 
@@ -51,10 +52,6 @@ export default async function patchMe(req, res) {
     return res.json({ user: pub });
 
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Dados inválidos.", details: e.errors } });
-    }
-    console.error("[user.patchMe]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
+    next(e);
   }
 }

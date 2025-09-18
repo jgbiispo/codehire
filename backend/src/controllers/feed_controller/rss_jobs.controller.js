@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import { Job, Company, Tag, sequelize } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const qSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
@@ -126,12 +127,11 @@ ${xmlItems}
     res.setHeader("Last-Modified", new Date(lastBuild).toUTCString());
 
     if (req.headers["if-none-match"] === etag) {
-      return res.status(304).end();
+      throw httpError(304);
     }
 
     return res.status(200).send(rss);
   } catch (e) {
-    console.error("[rss.jobs]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    next(e);
   }
 }

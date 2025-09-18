@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { sequelize, Job, Application } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const paramsSchema = z.object({ id: z.uuid() });
 const bodySchema = z.object({
@@ -8,23 +9,27 @@ const bodySchema = z.object({
   answers: z.record(z.any()).optional(),
 });
 
-export default async function applyToJob(req, res) {
+export default async function applyToJob(req, res, next) {
   const t = await sequelize.transaction();
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) { await t.rollback(); return res.status(401).json({ error: { code: "UNAUTHORIZED" } }); }
-    if (role !== "candidate") { await t.rollback(); return res.status(403).json({ error: { code: "FORBIDDEN", message: "Apenas candidatos podem se aplicar." } }); }
+    if (!uid) { await t.rollback(); throw httpError(401, "UNAUTHORIZED"); }
+    if (role !== "candidate") { await t.rollback(); throw httpError(403, "FORBIDDEN", "Apenas candidatos podem se candidatar a vagas."); }
 
     const { id: jobId } = paramsSchema.parse(req.params);
     const { resumeUrl, coverLetterMd, answers } = bodySchema.parse(req.body);
 
     const job = await Job.findByPk(jobId, { transaction: t, lock: t.LOCK.UPDATE });
-    if (!job) { await t.rollback(); return res.status(404).json({ error: { code: "NOT_FOUND", message: "Vaga não encontrada." } }); }
+    if (!job) { await t.rollback(); throw httpError(404, "JOB_NOT_FOUND", "Vaga não encontrada."); }
 
-    if (job.status !== "approved") { await t.rollback(); return res.status(400).json({ error: { code: "JOB_NOT_OPEN", message: "Vaga não está aberta para candidaturas." } }); }
+    if (job.status !== "approved") {
+      await t.rollback();
+      throw httpError(400, "JOB_NOT_OPEN", "Vaga não está aberta para candidaturas.");
+    }
     if (job.expires_at && new Date(job.expires_at) < new Date()) {
-      await t.rollback(); return res.status(400).json({ error: { code: "JOB_EXPIRED", message: "Vaga expirada." } });
+      await t.rollback();
+      throw httpError(400, "JOB_EXPIRED", "Vaga expirada.");
     }
 
     const app = await Application.create({
@@ -50,15 +55,6 @@ export default async function applyToJob(req, res) {
       },
     });
   } catch (e) {
-    await sequelize.transaction(async () => { }); // no-op to satisfy linter
-    await t.rollback();
-    if (e?.name === "SequelizeUniqueConstraintError") {
-      return res.status(409).json({ error: { code: "ALREADY_APPLIED", message: "Você já se candidatou para esta vaga." } });
-    }
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
-    }
-    console.error("[applyToJob.error]", { requestId: req.id, e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    return next(e);
   }
 }

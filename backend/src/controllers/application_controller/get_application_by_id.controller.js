@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { Application, Job, Company, User, Tag } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
-const pSchema = z.object({ id: z.string().uuid() });
+const pSchema = z.object({ id: z.uuid() });
 
-export default async function getApplicationById(req, res) {
+export default async function getApplicationById(req, res, next) {
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) return res.status(401).json({ error: { code: "UNAUTHORIZED" } });
+    if (!uid) throw httpError(401, "UNAUTHORIZED");
 
     const { id } = pSchema.parse(req.params);
     const a = await Application.findByPk(id, {
@@ -24,14 +25,14 @@ export default async function getApplicationById(req, res) {
       ],
     });
 
-    if (!a) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Candidatura não encontrada." } });
+    if (!a) throw httpError(404, "NOT_FOUND");
 
     // ACL: candidato dono OU admin OU owner da vaga
     const isCandidate = a.user_id === uid;
     const isAdmin = role === "admin";
     const isOwner = a.job?.company?.owner_id === uid;
     if (!isCandidate && !isAdmin && !isOwner) {
-      return res.status(403).json({ error: { code: "FORBIDDEN" } });
+      throw httpError(403, "FORBIDDEN");
     }
 
     const j = a.job;
@@ -61,10 +62,6 @@ export default async function getApplicationById(req, res) {
       },
     });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
-    }
-    console.error("[getApplicationById.error]", { requestId: req.id, e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    return next(e);
   }
 }

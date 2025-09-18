@@ -12,7 +12,7 @@ const qSchema = z.object({
   order: z.enum(["asc", "desc"]).default("desc"),
 });
 
-export default async function listCompanies(req, res) {
+export default async function listCompanies(req, res, next) {
   try {
     const { q, verified, ownerId, limit, offset, sort, order } = qSchema.parse(req.query);
 
@@ -74,10 +74,6 @@ export default async function listCompanies(req, res) {
 
     return res.json({ total, limit, offset, items });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Parâmetros inválidos.", details: e.errors } });
-    }
-    console.error("[listCompanies.error]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Erro inesperado." } });
+    next(e);
   }
 }

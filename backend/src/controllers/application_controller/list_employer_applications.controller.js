@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Op, Sequelize } from "sequelize";
 import { Application, Job, Company, User, Tag } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const qSchema = z.object({
   jobId: z.uuid().optional(),
@@ -11,11 +12,11 @@ const qSchema = z.object({
   order: z.enum(["recent", "oldest"]).default("recent"),
 });
 
-export default async function listEmployerApplications(req, res) {
+export default async function listEmployerApplications(req, res, next) {
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) return res.status(401).json({ error: { code: "UNAUTHORIZED" } });
+    if (!uid) throw httpError(401, "UNAUTHORIZED");
 
     const { jobId, status, q, limit, offset, order } = qSchema.parse(req.query);
 
@@ -97,10 +98,6 @@ export default async function listEmployerApplications(req, res) {
 
     return res.json({ total, limit, offset, items });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
-    }
-    console.error("[list.error]", { requestId: req.id, e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    return next(e);
   }
 }

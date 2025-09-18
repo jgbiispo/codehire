@@ -1,14 +1,15 @@
 import bcrypt from "bcrypt";
 import { getRefreshTokenFromReq, verifyRefreshToken, tokensFromUser, hashToken, setAuthCookies } from "../../lib/jwt.js";
 import { RefreshToken, User, sequelize } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
-export default async function refresh(req, res) {
+export default async function refresh(req, res, next) {
   const t = await sequelize.transaction();
   try {
     const raw = getRefreshTokenFromReq(req);
     if (!raw) {
       await t.rollback();
-      return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Refresh token ausente." } });
+      throw httpError(401, "UNAUTHORIZED", "Refresh token ausente.");
     }
 
     let payload;
@@ -16,21 +17,21 @@ export default async function refresh(req, res) {
       payload = verifyRefreshToken(raw);
     } catch {
       await t.rollback();
-      return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Refresh token inválido." } });
+      throw httpError(401, "UNAUTHORIZED", "Refresh token inválido.");
     }
 
     // Confere existência/estado do refresh no DB
     const stored = await RefreshToken.findOne({ where: { id: payload.jti }, transaction: t, lock: t.LOCK.UPDATE });
     if (!stored || stored.revoked_at || stored.expires_at < new Date()) {
       await t.rollback();
-      return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Refresh token revogado/expirado." } });
+      throw httpError(401, "UNAUTHORIZED", "Token não reconhecido ou expirado.");
     }
 
     // Proteção adicional: comparar hash
     const ok = await bcrypt.compare(raw, stored.token_hash);
     if (!ok) {
       await t.rollback();
-      return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Token não reconhecido." } });
+      throw httpError(401, "UNAUTHORIZED", "Token inválido.");
     }
 
     // Rotação: revoga o antigo
@@ -40,7 +41,7 @@ export default async function refresh(req, res) {
     const user = await User.findByPk(payload.sub, { transaction: t });
     if (!user) {
       await t.rollback();
-      return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Usuário não encontrado." } });
+      throw httpError(401, "UNAUTHORIZED", "Usuário do token não existe mais.");
     }
 
     const { access, refresh, jti } = tokensFromUser(user);
@@ -65,7 +66,6 @@ export default async function refresh(req, res) {
     return res.status(200).json({ user: pub });
   } catch (e) {
     await t.rollback();
-    console.error("[refresh.error]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL", message: "Internal server error" } });
+    return next(e);
   }
 }

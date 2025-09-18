@@ -17,7 +17,7 @@ const querySchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
-export default async function searchJobs(req, res) {
+export default async function searchJobs(req, res, next) {
   try {
     const {
       q, tags, company, experienceLevel, employmentType,
@@ -152,10 +152,6 @@ export default async function searchJobs(req, res) {
 
     return res.json({ total: count, limit, offset, items });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
-    }
-    console.error("[search.jobs]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    next(e);
   }
 }

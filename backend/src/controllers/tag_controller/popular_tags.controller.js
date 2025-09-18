@@ -7,12 +7,12 @@ const TAG_TYPES = ["tech", "role", "seniority", "other"];
 const querySchema = z.object({
   sinceDays: z.coerce.number().int().min(1).max(3650).default(90),
   q: z.string().trim().optional(),
-  type: z.string().trim().optional(), // ex: "tech,role"
+  type: z.string().trim().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
-export default async function popularTags(req, res) {
+export default async function popularTags(req, res, next) {
   try {
     const { sinceDays, q, type, limit, offset } = querySchema.parse(req.query);
 
@@ -88,10 +88,6 @@ export default async function popularTags(req, res) {
       }),
     });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", details: e.errors } });
-    }
-    console.error("[tags.popular]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    next(e);
   }
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Op, Sequelize } from "sequelize";
-import httpError from "../../../src/utils/httpError.js";
 import { Job, Company } from "../../../db/sequelize.js";
+import { httpError } from "../../server/http-error.js";
 
 const querySchema = z.object({
   status: z.enum(["draft", "pending", "approved", "rejected", "expired"]).optional(),

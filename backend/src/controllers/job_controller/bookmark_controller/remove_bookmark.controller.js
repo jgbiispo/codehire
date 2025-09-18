@@ -1,26 +1,22 @@
 import { z } from "zod";
 import { Bookmark } from "../../../../db/sequelize.js";
+import { httpError } from "../../../server/http-error.js";
 
 const paramsSchema = z.object({ id: z.uuid() });
 
-export default async function unbookmarkJob(req, res) {
+export default async function unbookmarkJob(req, res, next) {
   try {
     const uid = req.user?.id;
     const role = req.user?.role;
-    if (!uid) return res.status(401).json({ error: { code: "UNAUTHORIZED" } });
-    if (role !== "candidate") {
-      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Apenas candidatos podem remover vagas salvas." } });
-    }
+
+    if (!uid) throw httpError(401, "UNAUTHORIZED", "Token ausente.");
+    if (role !== "candidate") throw httpError(403, "FORBIDDEN", "Apenas candidatos podem remover favoritos.");
 
     const { id: jobId } = paramsSchema.parse(req.params);
 
     await Bookmark.destroy({ where: { user_id: uid, job_id: jobId } });
     return res.status(204).send();
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: "INVALID_REQUEST", details: e.errors } });
-    }
-    console.error("[jobs.unbookmark]", { requestId: req.id, error: e });
-    return res.status(500).json({ error: { code: "INTERNAL" } });
+    next(e);
   }
 }
