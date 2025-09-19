@@ -21,7 +21,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser(process.env.COOKIE_SECRET || undefined));
 
 // Rotas
-app.use('/', routes);
+app.use('/api/v1', routes);
 app.use(errorHandler);
 
 export default app;
