@@ -46,23 +46,32 @@ export function tokensFromUser(user) {
   return { access, refresh, jti };
 }
 
-export function setAuthCookies(res, accessToken, refreshToken) {
-  res.cookie("access_token", accessToken, {
+function isValidCookieDomain(input) {
+  if (!input) return false;
+  const d = String(input).trim();
+  if (d.startsWith("http")) return false;
+  if (d.includes(":")) return false;
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(d)) return false;
+  return /^[a-zA-Z0-9.-]+$/.test(d);
+}
+
+export function setAuthCookies(res) {
+  const domainEnv = process.env.COOKIE_DOMAIN;
+  const domain = isValidCookieDomain(domainEnv) ? domainEnv : undefined;
+
+  const secure = process.env.COOKIE_SECURE === "true";
+  const sameSite = process.env.COOKIE_SAMESITE || "lax";
+
+  const base = {
     httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
     path: "/",
-    domain: COOKIE_DOMAIN,
-    maxAge: ACCESS_TTL_MS,
-  });
-  res.cookie("refresh_token", refreshToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    path: "/",
-    domain: COOKIE_DOMAIN,
-    maxAge: REFRESH_TTL_MS,
-  });
+    secure,
+    sameSite,
+    ...(domain ? { domain } : {}),
+  };
+
+  res.cookie("access_token", access, { ...base, maxAge: 15 * 60 * 1000 });
+  res.cookie("refresh_token", refresh, { ...base, maxAge: 30 * 24 * 60 * 60 * 1000 });
 }
 
 export function clearAuthCookies(res) {
@@ -71,11 +80,11 @@ export function clearAuthCookies(res) {
 }
 
 export function getAccessTokenFromReq(req) {
-  const cookie = req.cookies?.access_token;
-  const header = req.get("authorization"); // "Bearer ..." (opcional)
-  if (cookie) return cookie;
-  if (header?.startsWith("Bearer ")) return header.slice(7);
-  return null;
+  const c = req.signedCookies?.access_token || req.cookies?.access_token;
+  if (c) return c;
+  const h = req.get("authorization");
+  const m = h && h.match(/^Bearer\s+(.+)$/i);
+  return m ? m[1] : null;
 }
 
 export function getRefreshTokenFromReq(req) {

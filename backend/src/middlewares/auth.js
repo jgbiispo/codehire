@@ -18,7 +18,7 @@ export function requireAuth(req, _res, next) {
     const token = getAccessTokenFromReq(req);
     if (!token) throw httpError(401, "UNAUTHORIZED", "Token não fornecido.");
     const payload = verifyAccessToken(token);
-    req.user = { id: payload.sub, role: payload.role };
+    req.user = { id: payload.sub, role: payload.role, email: payload.email ?? null };
     next();
   } catch (e) {
     next(e);
@@ -27,9 +27,12 @@ export function requireAuth(req, _res, next) {
 
 
 export function optionalAuth(req, _res, next) {
-  const payload = verifyAccess(readAccessFromCookies(req));
-  if (payload?.sub) {
-    req.user = { id: payload.sub, role: payload.role, email: payload.email ?? null };
+  const token = getAccessTokenFromReq(req);
+  if (token) {
+    try {
+      const payload = verifyAccessToken(token);
+      req.user = { id: payload.sub, role: payload.role, email: payload.email ?? null };
+    } catch { /* anônimo */ }
   }
   next();
 }
