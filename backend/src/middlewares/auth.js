@@ -1,40 +1,36 @@
 import { getAccessTokenFromReq, verifyAccessToken } from "../lib/jwt.js";
 import { httpError } from "../server/http-error.js";
-import jwt from "jsonwebtoken";
-
-function verifyAccess(token) {
-  if (!token) return null;
-  try {
-    const secret = process.env.AUTH_ACCESS_SECRET;
-    if (!secret) throw new Error("Missing AUTH_ACCESS_SECRET");
-    return jwt.verify(token, secret);
-  } catch {
-    return null;
-  }
-}
 
 export function requireAuth(req, _res, next) {
   try {
     const token = getAccessTokenFromReq(req);
-    if (!token) throw httpError(401, "UNAUTHORIZED", "Token não fornecido.");
-    const payload = verifyAccessToken(token);
-    req.user = { id: payload.sub, role: payload.role, email: payload.email ?? null };
+    if (typeof token !== "string" || token.length === 0) {
+      throw httpError(401, "UNAUTHORIZED", "Token não fornecido.");
+    }
+    let payload;
+    try {
+      payload = verifyAccessToken(token);
+    } catch {
+      throw httpError(401, "UNAUTHORIZED", "Token inválido ou expirado.");
+    }
+    req.user = { id: payload.sub, role: payload.role };
     next();
   } catch (e) {
     next(e);
   }
 }
 
-
 export function optionalAuth(req, _res, next) {
   const token = getAccessTokenFromReq(req);
-  if (token) {
-    try {
+  try {
+    const token = getAccessTokenFromReq(req);
+    if (typeof token === "string" && token.length > 0) {
       const payload = verifyAccessToken(token);
-      req.user = { id: payload.sub, role: payload.role, email: payload.email ?? null };
-    } catch { /* anônimo */ }
+      req.user = { id: payload.sub, role: payload.role };
+    }
+  } catch {
+    // ignora token inválido
   }
-  next();
 }
 
 export function requireRole(...allowed) {

@@ -16,13 +16,8 @@ router.get("/health", async (req, res) => {
   }
 });
 
-// Debug (remover em produção)
-router.get("/__debug/cookies", (req, res) => {
-  res.json({ cookies: req.cookies, signed: req.signedCookies });
-});
-
 /* ========== AUTH ========== */
-router.post("/register", auth.register);
+router.post("/register", optionalAuth, auth.register);
 router.post("/login", auth.login);
 router.post("/refresh", auth.refresh);
 router.post("/logout", auth.logout);
@@ -109,5 +104,6 @@ router.post("/admin/jobs/:id/approve", requireAuth, requireRole("admin"), admin.
 router.post("/admin/jobs/:id/reject", requireAuth, requireRole("admin"), admin.rejectJob);
 router.get("/admin/users", requireAuth, requireRole("admin"), admin.listUsers);
 router.get("/admin/companies", requireAuth, requireRole("admin"), admin.listCompanies);
+router.patch("/admin/users/:id/role", requireAuth, requireRole("admin"), admin.updateUserRole);
 
 export default router;

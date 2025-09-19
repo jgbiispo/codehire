@@ -9,22 +9,38 @@ export default async function register(req, res, next) {
   try {
     const schema = z.object({
       name: z.string().min(2).max(100),
-      email: z.email().transform((s) => s.toLowerCase()),
+      email: z.string().email().transform((s) => s.toLowerCase()),
       password: z.string().min(6).max(100),
       role: z.enum(["candidate", "employer", "admin"]).optional(),
     });
 
     const { name, email, password, role } = schema.parse(req.body);
 
-    const existing = await User.findOne({ where: { email }, transaction: t, lock: t.LOCK.UPDATE });
+    const isAdminRequester = req.user?.role === "admin";
+
+    const requestedRole = role ?? "candidate";
+
+    if (!isAdminRequester && requestedRole === "admin") {
+      throw httpError(403, "FORBIDDEN", "Não é permitido registrar como admin.");
+    }
+
+    const finalRole = isAdminRequester
+      ? requestedRole
+      : (requestedRole === "employer" ? "employer" : "candidate");
+
+    const existing = await User.findOne({ where: { email }, transaction: t });
     if (existing) {
-      await t.rollback();
       throw httpError(409, "USER_ALREADY_EXISTS", "Usuário com este email já existe.");
     }
 
     const password_hash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, password_hash, role: role || "candidate" }, { transaction: t });
-    await user.reload({ transaction: t });
+
+    const user = await User.create({
+      name,
+      email,
+      password_hash,
+      role: finalRole,
+    }, { transaction: t });
 
     const { access, refresh, jti } = tokensFromUser(user);
     const token_hash = await hashToken(refresh);
@@ -40,14 +56,16 @@ export default async function register(req, res, next) {
 
     await t.commit();
 
-    setAuthCookies(res, access, refresh);
+    setAuthCookies(res, { access, refresh });
 
     const pub = {
       id: user.id, name: user.name, email: user.email, role: user.role,
       avatarUrl: user.avatar_url ?? null, headline: user.headline ?? null, location: user.location ?? null,
     };
+
     return res.status(201).json({ user: pub });
   } catch (e) {
+    await t.rollback();
     return next(e);
   }
 }

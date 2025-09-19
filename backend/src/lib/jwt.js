@@ -82,8 +82,8 @@ function computeCookieBaseOptions() {
 
 export function setAuthCookies(res, access, refresh) {
   const base = computeCookieBaseOptions();
-  res.cookie("access_token", access, { ...base, maxAge: ACCESS_TTL_MS });
-  res.cookie("refresh_token", refresh, { ...base, maxAge: REFRESH_TTL_MS });
+  res.cookie("access_token", String(access), { ...base, maxAge: ACCESS_TTL_MS });
+  res.cookie("refresh_token", String(refresh), { ...base, maxAge: REFRESH_TTL_MS });
 }
 
 export function clearAuthCookies(res) {
