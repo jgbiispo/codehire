@@ -16,6 +16,11 @@ router.get("/health", async (req, res) => {
   }
 });
 
+// Debug (remover em produção)
+router.get("/__debug/cookies", (req, res) => {
+  res.json({ cookies: req.cookies, signed: req.signedCookies });
+});
+
 /* ========== AUTH ========== */
 router.post("/register", auth.register);
 router.post("/login", auth.login);
