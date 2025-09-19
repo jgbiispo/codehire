@@ -124,7 +124,7 @@ fi
 
 # ---- paths do projeto ----
 BACKEND_DIR="backend"
-# FRONTEND_DIR="frontend"   # (FRONTEND) descomente quando houver frontend
+# FRONTEND_DIR="app"   # (FRONTEND) 
 
 if [[ ! -d "$BACKEND_DIR" ]]; then
   err "Pasta backend não encontrada em: $BACKEND_DIR"
