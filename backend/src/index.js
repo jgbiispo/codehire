@@ -1,7 +1,7 @@
 import app from './app.js';
 import { sequelize } from "../db/sequelize.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.CODEHIRE_API_PORT || 3000;
 
 // Start server
 app.listen(PORT, async () => {
